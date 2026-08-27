@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Ray | Roblox Developer</title>
+  <meta name="description" content="Ray builds Roblox gameplay systems, UI, 3D environments and live experiences. Full-stack development through Atlas Order.">
+  <meta name="theme-color" content="#0a0a0a">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#090909;
+      --panel:#101010;
+      --panel-2:#141414;
+      --text:#f5f2ea;
+      --muted:#85827b;
+      --line:#252525;
+      --line-light:#383838;
+      --acid:#d7ff3f;
+      --acid-2:#a8d900;
+      --white:#fffdf7;
+      --display:'Manrope',Inter,sans-serif;
+      --body:Inter,system-ui,sans-serif;
+      --mono:'DM Mono',ui-monospace,monospace;
+      --ease:cubic-bezier(.2,.75,.2,1);
+      --ease2:cubic-bezier(.16,1,.3,1);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth;background:var(--bg);color:var(--text)}
+    body{font-family:var(--body);line-height:1.5;overflow-x:hidden;background:
+      radial-gradient(circle at 68% 10%,rgba(215,255,63,.08),transparent 25%),
+      radial-gradient(circle at 18% 42%,rgba(255,255,255,.025),transparent 28%),var(--bg)}
+    body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:100;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:72px 72px;mask-image:linear-gradient(to bottom,black,transparent 88%);opacity:.35}
+    a{color:inherit;text-decoration:none}
+    button{font:inherit}
+    img{max-width:100%;display:block}
+    ::selection{background:var(--acid);color:#090909}
+    .wrap{width:min(1380px,calc(100% - 48px));margin:auto}
+    .mono{font:500 .68rem var(--mono);text-transform:uppercase;letter-spacing:.11em}
+    .tiny{font-size:.78rem;color:var(--muted)}
+    .progress{position:fixed;left:0;top:0;width:0;height:3px;background:var(--acid);z-index:1000;box-shadow:0 0 18px rgba(215,255,63,.6)}
+    .noise{position:fixed;inset:0;pointer-events:none;opacity:.035;z-index:99;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+    .cursor,.cursor-ring{position:fixed;top:0;left:0;pointer-events:none;z-index:1100;border-radius:50%;transform:translate(-50%,-50%);opacity:0}
+    .cursor{width:8px;height:8px;background:var(--acid);mix-blend-mode:difference}
+    .cursor-ring{width:34px;height:34px;border:1px solid rgba(215,255,63,.65);transition:width .18s ease,height .18s ease,border-color .18s ease,opacity .2s ease}
+    body.has-cursor .cursor,.body.has-cursor .cursor-ring{opacity:1}
+    .cursor-ring.big{width:66px;height:66px;border-color:rgba(215,255,63,.9)}
+
+    header{position:fixed;top:0;left:0;right:0;z-index:900;padding:14px 0;transition:background .35s ease,border-color .35s ease,transform .35s ease}
+    header.scrolled{background:rgba(9,9,9,.76);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.07)}
+    .nav{display:flex;align-items:center;justify-content:space-between;gap:24px}
+    .brand{display:flex;align-items:center;gap:12px;letter-spacing:-.04em}
+    .brand-mark{width:34px;height:34px;border:1px solid var(--line-light);display:grid;place-items:center;background:#0d0d0d;position:relative;overflow:hidden}
+    .brand-mark::before{content:"";position:absolute;inset:0;background:var(--acid);transform:translateY(100%);transition:transform .35s var(--ease)}
+    .brand:hover .brand-mark::before{transform:none}
+    .brand-mark span{font:700 .72rem var(--mono);position:relative;z-index:2;color:var(--text);transition:color .35s ease}
+    .brand:hover .brand-mark span{color:#090909}
+    .brand strong{font:800 1rem var(--display)}
+    .brand em{font-style:normal;color:var(--muted);font:500 .65rem var(--mono);text-transform:uppercase;letter-spacing:.12em}
+    .navlinks{display:flex;gap:26px}
+    .navlinks a{font:500 .68rem var(--mono);text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:8px 0;position:relative}
+    .navlinks a::after{content:"";position:absolute;left:0;bottom:2px;width:0;height:1px;background:var(--acid);transition:width .3s var(--ease)}
+    .navlinks a:hover{color:var(--text)}
+    .navlinks a:hover::after{width:100%}
+    .nav-cta{display:inline-flex;align-items:center;gap:9px;padding:11px 14px;border:1px solid var(--line-light);background:var(--text);color:#0a0a0a;font:700 .67rem var(--mono);text-transform:uppercase;transition:transform .25s var(--ease),background .25s ease}
+    .nav-cta:hover{transform:translateY(-2px);background:var(--acid)}
+
+    main{position:relative;z-index:2}
+    .hero{min-height:100svh;padding:140px 0 70px;display:flex;align-items:center}
+    .hero-grid{display:grid;grid-template-columns:minmax(0,1.1fr) 430px;gap:72px;align-items:end}
+    .hero-kicker{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:26px}
+    .kicker-left{color:var(--muted)}
+    .status{display:inline-flex;align-items:center;gap:8px;color:var(--text)}
+    .status-dot{width:7px;height:7px;border-radius:50%;background:var(--acid);box-shadow:0 0 0 6px rgba(215,255,63,.08),0 0 20px rgba(215,255,63,.55);animation:pulse 2.2s infinite}
+    @keyframes pulse{0%,100%{transform:scale(.9)}50%{transform:scale(1.08)}}
+    .hero h1{font:800 clamp(4.8rem,10vw,10.8rem)/.82 var(--display);letter-spacing:-.085em;max-width:1080px}
+    .hero h1 span{display:block;color:var(--acid)}
+    .hero-bottom{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:44px;margin-top:42px;align-items:end}
+    .hero-copy{font-size:1.08rem;line-height:1.7;color:#bbb8b0;max-width:720px}
+    .hero-copy b{color:var(--text);font-weight:700}
+    .hero-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:14px 16px;border:1px solid var(--line-light);font:700 .67rem var(--mono);text-transform:uppercase;transition:transform .25s var(--ease),background .25s ease,color .25s ease,border-color .25s ease}
+    .btn.primary{background:var(--text);color:#0a0a0a;border-color:var(--text)}
+    .btn.primary:hover{background:var(--acid);border-color:var(--acid);transform:translateY(-3px)}
+    .btn.ghost:hover{background:var(--panel-2);transform:translateY(-3px)}
+    .hero-note{border-left:1px solid var(--line-light);padding-left:18px;color:var(--muted)}
+    .hero-note strong{display:block;font:700 .95rem var(--display);color:var(--text);margin-bottom:6px}
+    .hero-note p{font-size:.88rem;line-height:1.6}
+
+    .hero-art{position:relative;min-height:560px;display:flex;align-items:flex-end;justify-content:center}
+    .hero-art::before{content:"";position:absolute;inset:5% -12% 10% 4%;background:radial-gradient(circle at 50% 42%,rgba(215,255,63,.18),transparent 48%);filter:blur(10px)}
+    .profile-card{position:relative;width:min(100%,390px);aspect-ratio:4/5;border:1px solid var(--line-light);background:#0f0f0f;overflow:hidden;transform-style:preserve-3d;transition:transform .25s ease,box-shadow .4s ease}
+    .profile-card::before{content:"";position:absolute;inset:0;background:linear-gradient(145deg,rgba(255,255,255,.09),transparent 28%,transparent 68%,rgba(215,255,63,.05));z-index:2;pointer-events:none}
+    .profile-card img{width:100%;height:100%;object-fit:cover;filter:grayscale(100%);transition:filter .5s ease,transform .8s var(--ease)}
+    .profile-card:hover img{filter:grayscale(0%);transform:scale(1.035)}
+    .profile-card:hover{box-shadow:0 30px 90px rgba(0,0,0,.5),0 0 45px rgba(215,255,63,.08)}
+    .profile-label{position:absolute;left:14px;bottom:14px;right:14px;z-index:3;display:flex;justify-content:space-between;gap:14px;align-items:flex-end;font:500 .66rem var(--mono);text-transform:uppercase}
+    .profile-label span:last-child{color:var(--acid)}
+    .profile-corner{position:absolute;top:14px;right:14px;z-index:4;padding:7px 9px;border:1px solid rgba(255,255,255,.18);background:rgba(9,9,9,.52);backdrop-filter:blur(10px);font:500 .62rem var(--mono);color:var(--muted)}
+    .float-tag{position:absolute;z-index:5;border:1px solid var(--line-light);background:rgba(15,15,15,.78);backdrop-filter:blur(12px);padding:11px 13px;box-shadow:0 14px 50px rgba(0,0,0,.25)}
+    .float-tag.one{top:16%;left:-10%;animation:float1 5.5s ease-in-out infinite}
+    .float-tag.two{right:-7%;bottom:20%;animation:float2 6.5s ease-in-out infinite}
+    .float-tag strong{font:700 .85rem var(--display);display:block}
+    .float-tag span{font-size:.72rem;color:var(--muted)}
+    @keyframes float1{50%{transform:translateY(-9px)}}
+    @keyframes float2{50%{transform:translateY(8px)}}
+
+    .ticker{border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;background:#0d0d0d}
+    .ticker-track{display:flex;min-width:max-content;animation:ticker 28s linear infinite}
+    .ticker-item{display:flex;align-items:center;gap:22px;padding:15px 24px;font:500 .66rem var(--mono);text-transform:uppercase;letter-spacing:.1em;color:#aaa79f}
+    .ticker-item b{color:var(--acid);font-size:.95rem}
+    @keyframes ticker{to{transform:translateX(-50%)}}
+
+    .section{padding:108px 0;border-bottom:1px solid var(--line)}
+    .section-top{display:grid;grid-template-columns:200px minmax(0,1fr);gap:48px;margin-bottom:46px}
+    .section-id{color:var(--muted);padding-top:8px}
+    .section-title{font:800 clamp(2.6rem,6vw,6.8rem)/.9 var(--display);letter-spacing:-.075em;max-width:980px}
+    .section-title span{color:var(--acid)}
+    .section-intro{color:#89867e;max-width:720px;margin-top:18px;font-size:1rem;line-height:1.75}
+    .reveal{opacity:0;transform:translateY(28px);transition:opacity .8s var(--ease2),transform .8s var(--ease2)}
+    .reveal.visible{opacity:1;transform:none}
+    .stagger>*{transition-delay:calc(var(--i)*70ms)}
+
+    .proof-grid{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-left:1px solid var(--line)}
+    .proof{min-height:150px;padding:22px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);transition:background .3s ease,transform .3s var(--ease)}
+    .proof:hover{background:var(--panel);transform:translateY(-4px)}
+    .proof .mono{color:var(--muted)}
+    .proof-value{font:800 clamp(2.1rem,3.3vw,3.5rem)/1 var(--display);letter-spacing:-.07em;margin:18px 0 7px}
+    .proof-label{font-size:.78rem;color:var(--muted)}
+
+    .work-list{display:grid;gap:0}
+    .work{display:grid;grid-template-columns:54px minmax(0,1fr) 210px;gap:24px;padding:26px 0;border-top:1px solid var(--line);position:relative;overflow:hidden}
+    .work:last-child{border-bottom:1px solid var(--line)}
+    .work::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(215,255,63,.045),transparent 55%);transform:translateX(-100%);transition:transform .55s var(--ease2)}
+    .work:hover::before{transform:none}
+    .work-no{font:500 .68rem var(--mono);color:var(--muted);padding-top:5px}
+    .work-main{display:grid;grid-template-columns:minmax(280px,520px) minmax(0,1fr);gap:28px;align-items:center;position:relative;z-index:1}
+    .work-media{aspect-ratio:16/10;background:#131313;border:1px solid var(--line);overflow:hidden;position:relative}
+    .work-media::after{content:"VIEW PROJECT";position:absolute;left:14px;bottom:12px;padding:6px 8px;border:1px solid rgba(255,255,255,.18);background:rgba(9,9,9,.58);backdrop-filter:blur(8px);font:500 .58rem var(--mono);opacity:0;transform:translateY(8px);transition:opacity .35s ease,transform .35s var(--ease)}
+    .work:hover .work-media::after{opacity:1;transform:none}
+    .work-media img{width:100%;height:100%;object-fit:cover;filter:saturate(.75);transition:transform .7s var(--ease),filter .5s ease}
+    .work:hover .work-media img{transform:scale(1.045);filter:saturate(1)}
+    .work-copy .role{display:inline-block;color:var(--acid);font:500 .63rem var(--mono);text-transform:uppercase;letter-spacing:.11em;margin-bottom:10px}
+    .work-copy h3{font:800 clamp(1.7rem,3vw,3rem)/.98 var(--display);letter-spacing:-.06em;margin-bottom:11px}
+    .work-copy p{color:#87847d;line-height:1.65;max-width:560px}
+    .work-link{display:inline-flex;align-items:center;gap:8px;margin-top:17px;font:600 .63rem var(--mono);text-transform:uppercase;color:var(--text);border-bottom:1px solid var(--line-light);padding-bottom:5px}
+    .work-link i{font-size:.58rem;transition:transform .25s ease}
+    .work-link:hover i{transform:translate(3px,-3px)}
+    .work-meta{position:relative;z-index:1;border-left:1px solid var(--line);padding:7px 0 7px 18px;align-self:center}
+    .work-meta .mono{color:var(--muted)}
+    .work-meta p{font-size:.77rem;color:#69665f;line-height:1.6;margin-top:10px}
+
+    .capabilities{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line);border-left:1px solid var(--line)}
+    .cap{min-height:250px;padding:30px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);position:relative;transition:background .35s ease}
+    .cap:hover{background:var(--panel)}
+    .cap-no{font:500 .65rem var(--mono);color:var(--muted)}
+    .cap h3{font:800 1.8rem var(--display);letter-spacing:-.04em;margin:48px 0 10px}
+    .cap p{color:#7d7a73;max-width:500px;line-height:1.65}
+    .cap .line{position:absolute;right:30px;top:30px;width:56px;height:1px;background:var(--line-light);transition:width .5s var(--ease)}
+    .cap:hover .line{width:95px;background:var(--acid)}
+
+    .studio-card{border:1px solid var(--line);display:grid;grid-template-columns:1.1fr .9fr;background:#0d0d0d;overflow:hidden;position:relative}
+    .studio-copy{padding:54px;border-right:1px solid var(--line)}
+    .studio-copy h3{font:800 clamp(4rem,7vw,8rem)/.82 var(--display);letter-spacing:-.09em;margin:18px 0 24px}
+    .studio-copy p{color:#85827b;max-width:660px;line-height:1.75}
+    .studio-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:28px}
+    .tag{border:1px solid var(--line-light);padding:8px 10px;font:500 .62rem var(--mono);text-transform:uppercase;color:#aaa79f;background:#101010}
+    .studio-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+    .studio-aside{display:flex;flex-direction:column;justify-content:space-between;min-height:520px}
+    .studio-aside img{width:100%;height:260px;object-fit:cover;filter:saturate(.85)}
+    .studio-aside-bottom{padding:28px}
+    .studio-aside-bottom .big{font:700 2.2rem/1.05 var(--display);letter-spacing:-.06em;margin:14px 0 22px}
+    .studio-socials{display:flex;flex-wrap:wrap;gap:8px}
+
+    .lab{background:#0b0b0b}
+    .lab-shell{border:1px solid var(--line);background:#0f0f0f;position:relative;overflow:hidden}
+    .lab-head{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:14px 16px;border-bottom:1px solid var(--line);font:500 .63rem var(--mono);text-transform:uppercase;color:#817e76}
+    .lab-head .live{color:var(--acid)}
+    .lab iframe{display:block;width:100%;height:610px;border:0;background:#0d0d0d}
+    .lab-caption{display:flex;justify-content:space-between;gap:16px;padding-top:13px;color:#6d6a63}
+
+    .about-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:80px}
+    .about-statement{font:800 clamp(3rem,6vw,6.5rem)/.88 var(--display);letter-spacing:-.075em}
+    .about-statement span{color:var(--acid)}
+    .about-copy{color:#86837c;line-height:1.75;font-size:1rem}
+    .facts{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line);margin-top:30px}
+    .fact{padding:18px 0;border-bottom:1px solid var(--line)}
+    .fact:nth-child(even){padding-left:18px;border-left:1px solid var(--line)}
+    .fact b{display:block;font:700 .95rem var(--display);color:var(--text)}
+    .fact span{font-size:.76rem;color:var(--muted)}
+    .quote{margin-top:34px;padding:19px 0 0;border-top:1px solid var(--line);font:600 1.05rem/1.5 var(--display);color:var(--text)}
+    .quote::before{content:"/";color:var(--acid);margin-right:9px}
+
+    .contact{padding:118px 0 124px;background:var(--acid);color:#090909}
+    .contact-grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:80px;align-items:end}
+    .contact h2{font:800 clamp(4.5rem,10vw,10.8rem)/.8 var(--display);letter-spacing:-.09em;max-width:1000px}
+    .contact-copy p{font-size:1rem;line-height:1.65;max-width:420px;margin-bottom:26px}
+    .contact .btn.primary{background:#090909;color:var(--acid);border-color:#090909}
+    .contact .btn.primary:hover{background:#fffdf7;color:#090909;border-color:#fffdf7}
+    .contact .btn.ghost{border-color:#090909}
+    .contact .btn.ghost:hover{background:#090909;color:var(--acid)}
+    footer{border-top:1px solid rgba(255,255,255,.07);padding:20px 0;background:#090909;color:#77736b}
+    .footer-row{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+    .mobile-toggle{display:none;width:40px;height:40px;border:1px solid var(--line-light);background:#0d0d0d;color:var(--text)}
+    .mobile-menu{display:none}
+
+    @media(max-width:1120px){
+      .hero-grid{grid-template-columns:1fr 340px;gap:40px}
+      .hero h1{font-size:clamp(4.2rem,10vw,8rem)}
+      .hero-art{min-height:480px}
+      .hero-bottom{grid-template-columns:1fr 250px}
+      .work{grid-template-columns:45px minmax(0,1fr)}
+      .work-meta{display:none}
+      .work-main{grid-template-columns:minmax(260px,1fr) 1fr}
+      .contact-grid{grid-template-columns:1fr}
+    }
+    @media(max-width:820px){
+      .wrap{width:min(100% - 28px,1380px)}
+      header{padding:9px 0}
+      .navlinks{display:none}
+      .nav-cta{display:none}
+      .mobile-toggle{display:grid;place-items:center}
+      .hero{padding-top:105px}
+      .hero-grid,.hero-bottom,.about-grid,.studio-card{grid-template-columns:1fr}
+      .hero-grid{gap:42px}
+      .hero-art{min-height:420px;max-width:560px;margin:auto;width:100%}
+      .float-tag.one{left:0}
+      .float-tag.two{right:0}
+      .section{padding:78px 0}
+      .section-top{grid-template-columns:1fr;gap:10px}
+      .proof-grid{grid-template-columns:1fr 1fr}
+      .work-main{grid-template-columns:1fr}
+      .work{grid-template-columns:36px 1fr;gap:12px;padding:22px 0}
+      .capabilities{grid-template-columns:1fr}
+      .studio-copy{border-right:0;border-bottom:1px solid var(--line);padding:34px}
+      .studio-aside{min-height:0}
+      .studio-aside img{height:210px}
+      .lab iframe{height:510px}
+      .contact{padding:84px 0 92px}
+    }
+    @media(max-width:560px){
+      .hero-kicker{align-items:flex-start;flex-direction:column}
+      .hero h1{font-size:clamp(3.5rem,17vw,5.5rem)}
+      .hero-copy{font-size:1rem}
+      .hero-note{margin-top:4px}
+      .hero-art{min-height:360px}
+      .float-tag{padding:9px 10px}
+      .float-tag strong{font-size:.75rem}
+      .proof-grid{grid-template-columns:1fr 1fr}
+      .proof{min-height:125px;padding:15px}
+      .proof-value{font-size:2rem}
+      .section-title{font-size:clamp(2.35rem,13vw,4.3rem)}
+      .studio-copy h3{font-size:4.5rem}
+      .about-statement{font-size:clamp(2.8rem,13vw,4.4rem)}
+      .contact h2{font-size:clamp(4rem,18vw,7rem)}
+      .lab-caption{flex-direction:column}
+    }
+    @media (pointer:coarse), (prefers-reduced-motion:reduce){
+      .cursor,.cursor-ring{display:none!important}
+      .reveal{opacity:1;transform:none;transition:none}
+      .ticker-track{animation:none}
+      html{scroll-behavior:auto}
+    }
+  </style>
+</head>
+<body>
+  <div class="noise"></div>
+  <div class="progress" id="progress"></div>
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <header id="header">
+    <div class="wrap nav">
+      <a class="brand magnetic" href="#top" aria-label="Ray home">
+        <span class="brand-mark"><span>R</span></span>
+        <strong>RAY</strong>
+        <em>Roblox developer</em>
+      </a>
+      <nav class="navlinks" aria-label="Primary navigation">
+        <a href="#work">Work</a>
+        <a href="#systems">Systems</a>
+        <a href="#studio">Studio</a>
+        <a href="#lab">Lab</a>
+        <a href="#about">About</a>
+      </nav>
+      <a class="nav-cta magnetic" href="https://discord.gg/bGfnVxBGGB" target="_blank" rel="noopener noreferrer">Hire / talk <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+      <button class="mobile-toggle" id="mobileToggle" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+    </div>
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="#work">Work</a><a href="#systems">Systems</a><a href="#studio">Studio</a><a href="#lab">Lab</a><a href="#about">About</a><a href="#contact">Contact</a>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="wrap">
+        <div class="hero-grid">
+          <div>
+            <div class="hero-kicker">
+              <span class="mono kicker-left">Roblox / full-stack / technical direction</span>
+              <span class="status mono"><span class="status-dot"></span> Available for selected work</span>
+            </div>
+            <h1 class="reveal">I build Roblox games.<span>You play the result.</span></h1>
+            <div class="hero-bottom reveal">
+              <div>
+                <p class="hero-copy">I script the systems, build the world, shape the UI, fix the ugly bugs and keep the whole thing moving. <b>When I take a project, I like having real ownership of it.</b></p>
+                <div class="hero-actions">
+                  <a class="btn primary magnetic" href="#work">See what I built <i class="fa-solid fa-arrow-down"></i></a>
+                  <a class="btn ghost magnetic" href="https://discord.gg/bGfnVxBGGB" target="_blank" rel="noopener noreferrer">Message me <i class="fa-brands fa-discord"></i></a>
+                </div>
+              </div>
+              <div class="hero-note">
+                <strong>Not a résumé site.</strong>
+                <p>I wanted the work to carry the conversation. Click around. Open the games. Rotate the model. Judge it yourself.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-art reveal">
+            <div class="float-tag one"><strong>8+ yrs</strong><span>3D building</span></div>
+            <div class="profile-card" id="profileCard">
+              <div class="profile-corner mono">Ray / 2026</div>
+              <img src="https://i.ibb.co/bgJHyVYT/robloxpfp.png" alt="Ray Roblox avatar" width="720" height="900" fetchpriority="high">
+              <div class="profile-label"><span>Roblox developer</span><span>Atlas Order</span></div>
+            </div>
+            <div class="float-tag two"><strong>17.6K+</strong><span>Atlas Order members</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="ticker" aria-hidden="true">
+      <div class="ticker-track">
+        <span class="ticker-item">Luau scripting <b>✦</b></span><span class="ticker-item">Gameplay systems <b>✦</b></span><span class="ticker-item">3D building <b>✦</b></span><span class="ticker-item">UI / UX <b>✦</b></span><span class="ticker-item">Optimization <b>✦</b></span><span class="ticker-item">Data systems <b>✦</b></span><span class="ticker-item">Atlas Order <b>✦</b></span>
+        <span class="ticker-item">Luau scripting <b>✦</b></span><span class="ticker-item">Gameplay systems <b>✦</b></span><span class="ticker-item">3D building <b>✦</b></span><span class="ticker-item">UI / UX <b>✦</b></span><span class="ticker-item">Optimization <b>✦</b></span><span class="ticker-item">Data systems <b>✦</b></span><span class="ticker-item">Atlas Order <b>✦</b></span>
+      </div>
+    </div>
+
+    <section class="section" id="work">
+      <div class="wrap">
+        <div class="section-top reveal">
+          <div class="section-id mono">01 / Selected work</div>
+          <div><h2 class="section-title">Four games. <span>Real work.</span></h2><p class="section-intro">These are the projects I want a studio to look at first. Some are mine, some are team projects I contributed to. I care about the full picture: code, visuals, player flow, performance and getting something finished.</p></div>
+        </div>
+        <div class="proof-grid stagger reveal">
+          <div class="proof" style="--i:0"><span class="mono">Experience</span><div class="proof-value">8+ yrs</div><div class="proof-label">3D building</div></div>
+          <div class="proof" style="--i:1"><span class="mono">Engineering</span><div class="proof-value">5+ yrs</div><div class="proof-label">Luau / gameplay</div></div>
+          <div class="proof" style="--i:2"><span class="mono">Community</span><div class="proof-value">17.6K+</div><div class="proof-label">Atlas Order members</div></div>
+          <div class="proof" style="--i:3"><span class="mono">Showcase</span><div class="proof-value">4</div><div class="proof-label">featured projects</div></div>
+        </div>
+
+        <div class="work-list" style="margin-top:38px">
+          <article class="work reveal">
+            <div class="work-no">01</div>
+            <div class="work-main">
+              <div class="work-media"><img src="https://i.ibb.co/KccPM58g/tlb1.png" alt="Brainrot Islands project" loading="lazy" width="1000" height="625"></div>
+              <div class="work-copy"><span class="role">Solo / Full-stack</span><h3>Brainrot Islands</h3><p>Built solo across map geometry, UI, animation, VFX, core gameplay logic, state machines and persistent data.</p><a class="work-link" href="https://roblox.com/games/121560706375064/Brainrot-Islands" target="_blank" rel="noopener noreferrer">Open experience <i class="fa-solid fa-arrow-up-right-from-square"></i></a></div>
+            </div>
+            <div class="work-meta"><span class="mono">Mar 2026 / present</span><p>Start to finish ownership, from the first build to the systems underneath it.</p></div>
+          </article>
+          <article class="work reveal">
+            <div class="work-no">02</div>
+            <div class="work-main">
+              <div class="work-media"><img src="https://i.ibb.co/nNR1qMsJ/bcr-cric.png" alt="City Services Bear Creek project" loading="lazy" width="1000" height="625"></div>
+              <div class="work-copy"><span class="role">Contribution / Rapid Games Studios</span><h3>City Services: Bear Creek</h3><p>Contributed to an existing production through gameplay scripting, system architecture, bug fixing and infrastructure work, including major client performance improvements. This is a team project, not my own game.</p><span class="work-link">Team contribution</span></div>
+            </div>
+            <div class="work-meta"><span class="mono">Feb 2026 / Mar 2026</span><p>Joined an existing production, found weak spots and improved the parts that mattered as a contributor.</p></div>
+          </article>
+          <article class="work reveal">
+            <div class="work-no">03</div>
+            <div class="work-main">
+              <div class="work-media"><img src="https://i.ibb.co/TDYK60LF/6-HOURS-7.png" alt="Find The Brainrots project" loading="lazy" width="1000" height="625"></div>
+              <div class="work-copy"><span class="role">Solo / Full-stack</span><h3>Find The Brainrots</h3><p>Rebuilt the map, made custom 3D assets and UI, then built the client and server systems around mobile memory limits.</p><a class="work-link" href="https://roblox.com/games/124221298439095/Find-The-Brainrots" target="_blank" rel="noopener noreferrer">Open experience <i class="fa-solid fa-arrow-up-right-from-square"></i></a></div>
+            </div>
+            <div class="work-meta"><span class="mono">Dec 2025 / present</span><p>Performance was part of the build, not something left for the last week.</p></div>
+          </article>
+          <article class="work reveal">
+            <div class="work-no">04</div>
+            <div class="work-main">
+              <div class="work-media"><img src="https://i.ibb.co/W46GnmwC/Blox-Royale-Icon-1.jpg" alt="Blox Royale project" loading="lazy" width="1000" height="625"></div>
+              <div class="work-copy"><span class="role">Solo / Full-stack</span><h3>Blox Royale</h3><p>Designed and delivered the project around UI, 3D meshes, map work, gameplay and the systems holding it together.</p><a class="work-link" href="https://roblox.com/games/125092852848866/Blox-Royale" target="_blank" rel="noopener noreferrer">Open experience <i class="fa-solid fa-arrow-up-right-from-square"></i></a></div>
+            </div>
+            <div class="work-meta"><span class="mono">Sep 2025 / Nov 2025</span><p>A compact example of taking a blank project and turning it into something playable.</p></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="systems">
+      <div class="wrap">
+        <div class="section-top reveal"><div class="section-id mono">02 / Systems</div><div><h2 class="section-title">The part players <span>feel</span>.</h2><p class="section-intro">A smooth game usually comes from a lot of decisions nobody notices. These are the areas I spend the most time thinking about.</p></div></div>
+        <div class="capabilities stagger">
+          <div class="cap reveal" style="--i:0"><span class="cap-no">01</span><span class="line"></span><h3>Gameplay architecture</h3><p>Client and server boundaries, state machines, reusable modules and data flow that stays readable when the project gets bigger.</p></div>
+          <div class="cap reveal" style="--i:1"><span class="cap-no">02</span><span class="line"></span><h3>Performance</h3><p>Finding expensive work, lowering client memory pressure and building with mobile in mind from the start.</p></div>
+          <div class="cap reveal" style="--i:2"><span class="cap-no">03</span><span class="line"></span><h3>UI / UX</h3><p>Interfaces that make sense at a glance, support the gameplay loop and feel like one product instead of twenty random screens.</p></div>
+          <div class="cap reveal" style="--i:3"><span class="cap-no">04</span><span class="line"></span><h3>3D + presentation</h3><p>Environment building, custom assets, animation and GFX that make the technical work easier to understand and the game nicer to play.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="studio">
+      <div class="wrap">
+        <div class="section-top reveal"><div class="section-id mono">03 / Studio</div><div><h2 class="section-title">I built a community <span>around the work.</span></h2><p class="section-intro">Atlas Order gives me a place to launch projects, run tests, publish updates and keep people around between releases.</p></div></div>
+        <div class="studio-card reveal">
+          <div class="studio-copy"><span class="mono">Atlas Order / official studio</span><h3>17.6K+</h3><p>I own and operate Atlas Order, a Roblox studio and community hub used to release games, coordinate testing, publish updates and keep a player base involved between releases.</p><div class="studio-tags"><span class="tag">Studio ownership</span><span class="tag">Community operations</span><span class="tag">Playtesting</span><span class="tag">Game releases</span></div><div class="studio-actions"><a class="btn primary" href="https://www.roblox.com/communities/32937478/Atlas-Order#!/about" target="_blank" rel="noopener noreferrer">Roblox group <i class="fa-solid fa-arrow-up-right-from-square"></i></a><a class="btn ghost" href="https://discord.gg/bGfnVxBGGB" target="_blank" rel="noopener noreferrer">Discord <i class="fa-brands fa-discord"></i></a></div></div>
+          <div class="studio-aside"><img src="https://i.ibb.co/0ymrxh3C/bannerrr.png" alt="Atlas Order banner" loading="lazy" width="1200" height="500"><div class="studio-aside-bottom"><span class="mono">Community / reach</span><div class="big">People are part of the product.</div><div class="studio-socials"><a class="tag" href="https://x.com/AtlasOrderRBX" target="_blank" rel="noopener noreferrer">X / @AtlasOrderRBX</a><a class="tag" href="https://www.youtube.com/@AtlasOrderRBX" target="_blank" rel="noopener noreferrer">YouTube / @AtlasOrderRBX</a></div></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section lab" id="lab">
+      <div class="wrap">
+        <div class="section-top reveal"><div class="section-id mono">04 / Lab</div><div><h2 class="section-title">Don't trust the screenshot. <span>Touch it.</span></h2><p class="section-intro">A live 3D viewer sits right here. Spin the asset around and look at the work yourself.</p></div></div>
+        <div class="lab-shell reveal"><div class="lab-head"><span>Atlas Order / interactive asset</span><span class="live">● live 3D</span></div><iframe src="https://viewer.tinyglb.com/604459093cd3432c99fe7c70be92b75a" title="Interactive 3D asset viewer" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="fullscreen"></iframe></div>
+        <div class="lab-caption mono"><span>drag / rotate / inspect</span><span>tinyglb viewer</span></div>
+      </div>
+    </section>
+
+    <section class="section" id="about">
+      <div class="wrap">
+        <div class="section-top reveal"><div class="section-id mono">05 / About</div><div><h2 class="section-title">I like the <span>hard problems.</span></h2><p class="section-intro">I work best when I can understand the whole thing, make the call, build the solution and stay around long enough to see whether it actually worked.</p></div></div>
+        <div class="about-grid">
+          <div class="reveal"><div class="about-statement">Builder mindset.<br><span>Engineer discipline.</span></div><div class="facts"><div class="fact"><b>Luau</b><span>Gameplay / architecture</span></div><div class="fact"><b>3D</b><span>Building / assets</span></div><div class="fact"><b>UI / UX</b><span>Interfaces / flows</span></div><div class="fact"><b>Optimization</b><span>Client / memory</span></div><div class="fact"><b>Data</b><span>DataStore / persistence</span></div><div class="fact"><b>Animation</b><span>R6 / R15</span></div></div></div>
+          <div class="reveal"><p class="about-copy">English, French and Arabic. Comfortable working alone, working with a team and jumping into a production problem when the answer is not obvious yet.</p><p class="quote">Give me a problem worth solving and enough room to solve it properly.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="contact" id="contact">
+      <div class="wrap contact-grid reveal"><div><span class="mono">06 / Contact</span><h2>Need a serious Roblox builder?</h2></div><div class="contact-copy"><p>For studio work, commissions or gameplay systems, Discord is the fastest way to reach me.</p><div class="hero-actions"><a class="btn primary magnetic" href="https://www.roblox.com/users/1099653590/profile" target="_blank" rel="noopener noreferrer">Roblox profile <i class="fa-solid fa-arrow-up-right-from-square"></i></a><a class="btn ghost magnetic" href="https://discord.gg/bGfnVxBGGB" target="_blank" rel="noopener noreferrer">Discord <i class="fa-brands fa-discord"></i></a></div></div></div>
+    </section>
+  </main>
+
+  <footer><div class="wrap footer-row"><span class="mono">RAY / ROBLOX DEVELOPER / 2026</span><span class="mono">Atlas Order</span></div></footer>
+
+  <script>
+    const $ = (s, p=document) => p.querySelector(s);
+    const $$ = (s, p=document) => [...p.querySelectorAll(s)];
+
+    const progress = $('#progress');
+    const header = $('#header');
+    const updateScroll = () => {
+      const d = document.documentElement;
+      const max = d.scrollHeight - d.clientHeight;
+      progress.style.width = (max > 0 ? (scrollY / max) * 100 : 0) + '%';
+      header.classList.toggle('scrolled', scrollY > 18);
+    };
+    addEventListener('scroll', updateScroll, {passive:true});
+    updateScroll();
+
+    const revealIO = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if(entry.isIntersecting){
+          entry.target.classList.add('visible');
+          revealIO.unobserve(entry.target);
+        }
+      });
+    }, {threshold:.12, rootMargin:'0px 0px -40px'});
+    $$('.reveal').forEach(el => revealIO.observe(el));
+
+    const cursor = $('#cursor');
+    const ring = $('#cursorRing');
+    let mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my;
+    if(matchMedia('(pointer:fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches){
+      document.body.classList.add('has-cursor');
+      addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; cursor.style.left=mx+'px'; cursor.style.top=my+'px'; });
+      const loop = () => { rx += (mx-rx)*.16; ry += (my-ry)*.16; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(loop); };
+      loop();
+      $$('.magnetic,.work-media,.profile-card').forEach(el => {
+        el.addEventListener('mouseenter', () => ring.classList.add('big'));
+        el.addEventListener('mouseleave', () => ring.classList.remove('big'));
+      });
+    }
+
+    const profile = $('#profileCard');
+    if(profile && matchMedia('(pointer:fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches){
+      profile.addEventListener('mousemove', e => {
+        const r = profile.getBoundingClientRect();
+        const x = (e.clientX-r.left)/r.width-.5;
+        const y = (e.clientY-r.top)/r.height-.5;
+        profile.style.transform = `perspective(900px) rotateY(${x*9}deg) rotateX(${y*-7}deg) translateY(-4px)`;
+      });
+      profile.addEventListener('mouseleave', () => profile.style.transform='');
+    }
+
+    const mobileToggle = $('#mobileToggle');
+    const mobileMenu = $('#mobileMenu');
+    mobileToggle?.addEventListener('click', () => {
+      const open = mobileMenu.classList.toggle('open');
+      mobileMenu.style.display = open ? 'grid' : 'none';
+    });
+    $$('#mobileMenu a').forEach(a => a.addEventListener('click', () => { mobileMenu.classList.remove('open'); mobileMenu.style.display='none'; }));
+
+    $$('.magnetic').forEach(el => {
+      if(!matchMedia('(pointer:fine)').matches) return;
+      el.addEventListener('mousemove', e => {
+        const r = el.getBoundingClientRect();
+        const x = e.clientX - (r.left + r.width/2);
+        const y = e.clientY - (r.top + r.height/2);
+        el.style.transform = `translate(${x*.08}px,${y*.08}px)`;
+      });
+      el.addEventListener('mouseleave', () => el.style.transform='');
+    });
+
+    const sectionLinks = $$('.navlinks a');
+    const sections = sectionLinks.map(a => $(a.getAttribute('href'))).filter(Boolean);
+    const navIO = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        const link = $('.navlinks a[href="#'+entry.target.id+'"]');
+        if(link) link.style.color = entry.isIntersecting ? 'var(--text)' : '';
+      });
+    }, {rootMargin:'-35% 0px -55% 0px',threshold:0});
+    sections.forEach(s => navIO.observe(s));
+  </script>
+</body>
+</html>
