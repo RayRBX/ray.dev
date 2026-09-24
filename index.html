@@ -1,521 +1,242 @@
 <!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Ray | Roblox Developer</title>
-  <meta name="description" content="Ray builds Roblox gameplay systems, UI, 3D environments and live experiences. Roblox development, from gameplay code to 3D and UI.">
-  <meta name="theme-color" content="#0a0a0a">
-  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    :root{
-      --bg:#090909;
-      --panel:#101010;
-      --panel-2:#141414;
-      --text:#f5f2ea;
-      --muted:#85827b;
-      --line:#252525;
-      --line-light:#383838;
-      --acid:#d7ff3f;
-      --acid-2:#a8d900;
-      --white:#fffdf7;
-      --display:'Manrope',Inter,sans-serif;
-      --body:Inter,system-ui,sans-serif;
-      --mono:'DM Mono',ui-monospace,monospace;
-      --ease:cubic-bezier(.2,.75,.2,1);
-      --ease2:cubic-bezier(.16,1,.3,1);
-    }
-    *{box-sizing:border-box;margin:0;padding:0}
-    html{scroll-behavior:smooth;background:var(--bg);color:var(--text)}
-    body{font-family:var(--body);line-height:1.5;overflow-x:hidden;background:
-      radial-gradient(circle at 68% 10%,rgba(215,255,63,.08),transparent 25%),
-      radial-gradient(circle at 18% 42%,rgba(255,255,255,.025),transparent 28%),var(--bg)}
-    body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:100;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:72px 72px;mask-image:linear-gradient(to bottom,black,transparent 88%);opacity:.35}
-    a{color:inherit;text-decoration:none}
-    button{font:inherit}
-    img{max-width:100%;display:block}
-    ::selection{background:var(--acid);color:#090909}
-    .wrap{width:min(1380px,calc(100% - 48px));margin:auto}
-    .mono{font:500 .68rem var(--mono);text-transform:uppercase;letter-spacing:.11em}
-    .tiny{font-size:.78rem;color:var(--muted)}
-    .progress{position:fixed;left:0;top:0;width:0;height:3px;background:var(--acid);z-index:1000;box-shadow:0 0 18px rgba(215,255,63,.6)}
-    .noise{position:fixed;inset:0;pointer-events:none;opacity:.035;z-index:99;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
-    .cursor,.cursor-ring{position:fixed;top:0;left:0;pointer-events:none;z-index:1100;border-radius:50%;transform:translate(-50%,-50%);opacity:0}
-    .cursor{width:8px;height:8px;background:var(--acid);mix-blend-mode:difference}
-    .cursor-ring{width:34px;height:34px;border:1px solid rgba(215,255,63,.65);transition:width .18s ease,height .18s ease,border-color .18s ease,opacity .2s ease}
-    body.has-cursor .cursor,.body.has-cursor .cursor-ring{opacity:1}
-    .cursor-ring.big{width:66px;height:66px;border-color:rgba(215,255,63,.9)}
-
-    header{position:fixed;top:0;left:0;right:0;z-index:900;padding:14px 0;transition:background .35s ease,border-color .35s ease,transform .35s ease}
-    header.scrolled{background:rgba(9,9,9,.76);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.07)}
-    .nav{display:flex;align-items:center;justify-content:space-between;gap:24px}
-    .brand{display:flex;align-items:center;gap:12px;letter-spacing:-.04em}
-    .brand-mark{width:34px;height:34px;border:1px solid var(--line-light);display:grid;place-items:center;background:#0d0d0d;position:relative;overflow:hidden}
-    .brand-mark::before{content:"";position:absolute;inset:0;background:var(--acid);transform:translateY(100%);transition:transform .35s var(--ease)}
-    .brand:hover .brand-mark::before{transform:none}
-    .brand-mark span{font:700 .72rem var(--mono);position:relative;z-index:2;color:var(--text);transition:color .35s ease}
-    .brand:hover .brand-mark span{color:#090909}
-    .brand strong{font:800 1rem var(--display)}
-    .brand em{font-style:normal;color:var(--muted);font:500 .65rem var(--mono);text-transform:uppercase;letter-spacing:.12em}
-    .navlinks{display:flex;gap:26px}
-    .navlinks a{font:500 .68rem var(--mono);text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:8px 0;position:relative}
-    .navlinks a::after{content:"";position:absolute;left:0;bottom:2px;width:0;height:1px;background:var(--acid);transition:width .3s var(--ease)}
-    .navlinks a:hover{color:var(--text)}
-    .navlinks a:hover::after{width:100%}
-    .nav-cta{display:inline-flex;align-items:center;gap:9px;padding:11px 14px;border:1px solid var(--line-light);background:var(--text);color:#0a0a0a;font:700 .67rem var(--mono);text-transform:uppercase;transition:transform .25s var(--ease),background .25s ease}
-    .nav-cta:hover{transform:translateY(-2px);background:var(--acid)}
-
-    main{position:relative;z-index:2}
-    .hero{min-height:100svh;padding:140px 0 70px;display:flex;align-items:center}
-    .hero-grid{display:grid;grid-template-columns:minmax(0,1.1fr) 430px;gap:72px;align-items:end}
-    .hero-kicker{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:26px}
-    .kicker-left{color:var(--muted)}
-    .status{display:inline-flex;align-items:center;gap:8px;color:var(--text)}
-    .status-dot{width:7px;height:7px;border-radius:50%;background:var(--acid);box-shadow:0 0 0 6px rgba(215,255,63,.08),0 0 20px rgba(215,255,63,.55);animation:pulse 2.2s infinite}
-    @keyframes pulse{0%,100%{transform:scale(.9)}50%{transform:scale(1.08)}}
-    .hero h1{font:800 clamp(4.8rem,10vw,10.8rem)/.82 var(--display);letter-spacing:-.085em;max-width:1080px}
-    .hero h1 span{display:block;color:var(--acid)}
-    .hero-bottom{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:44px;margin-top:42px;align-items:end}
-    .hero-copy{font-size:1.08rem;line-height:1.7;color:#bbb8b0;max-width:720px}
-    .hero-copy b{color:var(--text);font-weight:700}
-    .hero-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
-    .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:14px 16px;border:1px solid var(--line-light);font:700 .67rem var(--mono);text-transform:uppercase;transition:transform .25s var(--ease),background .25s ease,color .25s ease,border-color .25s ease}
-    .btn.primary{background:var(--text);color:#0a0a0a;border-color:var(--text)}
-    .btn.primary:hover{background:var(--acid);border-color:var(--acid);transform:translateY(-3px)}
-    .btn.ghost:hover{background:var(--panel-2);transform:translateY(-3px)}
-    .hero-note{border-left:1px solid var(--line-light);padding-left:18px;color:var(--muted)}
-    .hero-note strong{display:block;font:700 .95rem var(--display);color:var(--text);margin-bottom:6px}
-    .hero-note p{font-size:.88rem;line-height:1.6}
-
-    .hero-art{position:relative;min-height:560px;display:flex;align-items:flex-end;justify-content:center}
-    .hero-art::before{content:"";position:absolute;inset:5% -12% 10% 4%;background:radial-gradient(circle at 50% 42%,rgba(215,255,63,.18),transparent 48%);filter:blur(10px)}
-    .profile-card{position:relative;width:min(100%,390px);aspect-ratio:4/5;border:1px solid var(--line-light);background:#0f0f0f;overflow:hidden;transform-style:preserve-3d;transition:transform .25s ease,box-shadow .4s ease}
-    .profile-card::before{content:"";position:absolute;inset:0;background:linear-gradient(145deg,rgba(255,255,255,.09),transparent 28%,transparent 68%,rgba(215,255,63,.05));z-index:2;pointer-events:none}
-    .profile-card img{width:100%;height:100%;object-fit:cover;filter:grayscale(100%);transition:filter .5s ease,transform .8s var(--ease)}
-    .profile-card:hover img{filter:grayscale(0%);transform:scale(1.035)}
-    .profile-card:hover{box-shadow:0 30px 90px rgba(0,0,0,.5),0 0 45px rgba(215,255,63,.08)}
-    .profile-label{position:absolute;left:14px;bottom:14px;right:14px;z-index:3;display:flex;justify-content:space-between;gap:14px;align-items:flex-end;font:500 .66rem var(--mono);text-transform:uppercase}
-    .profile-label span:last-child{color:var(--acid)}
-    .profile-corner{position:absolute;top:14px;right:14px;z-index:4;padding:7px 9px;border:1px solid rgba(255,255,255,.18);background:rgba(9,9,9,.52);backdrop-filter:blur(10px);font:500 .62rem var(--mono);color:var(--muted)}
-    .float-tag{position:absolute;z-index:5;border:1px solid var(--line-light);background:rgba(15,15,15,.78);backdrop-filter:blur(12px);padding:11px 13px;box-shadow:0 14px 50px rgba(0,0,0,.25)}
-    .float-tag.one{top:16%;left:-10%;animation:float1 5.5s ease-in-out infinite}
-    .float-tag.two{right:-7%;bottom:20%;animation:float2 6.5s ease-in-out infinite}
-    .float-tag strong{font:700 .85rem var(--display);display:block}
-    .float-tag span{font-size:.72rem;color:var(--muted)}
-    @keyframes float1{50%{transform:translateY(-9px)}}
-    @keyframes float2{50%{transform:translateY(8px)}}
-
-    .ticker{border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;background:#0d0d0d}
-    .ticker-track{display:flex;min-width:max-content;animation:ticker 28s linear infinite}
-    .ticker-item{display:flex;align-items:center;gap:22px;padding:15px 24px;font:500 .66rem var(--mono);text-transform:uppercase;letter-spacing:.1em;color:#aaa79f}
-    .ticker-item b{color:var(--acid);font-size:.95rem}
-    @keyframes ticker{to{transform:translateX(-50%)}}
-
-    .section{padding:108px 0;border-bottom:1px solid var(--line)}
-    .section-top{display:grid;grid-template-columns:200px minmax(0,1fr);gap:48px;margin-bottom:46px}
-    .section-id{color:var(--muted);padding-top:8px}
-    .section-title{font:800 clamp(2.6rem,6vw,6.8rem)/.9 var(--display);letter-spacing:-.075em;max-width:980px}
-    .section-title span{color:var(--acid)}
-    .section-intro{color:#89867e;max-width:720px;margin-top:18px;font-size:1rem;line-height:1.75}
-    .reveal{opacity:0;transform:translateY(28px);transition:opacity .8s var(--ease2),transform .8s var(--ease2)}
-    .reveal.visible{opacity:1;transform:none}
-    .stagger>*{transition-delay:calc(var(--i)*70ms)}
-
-    .proof-grid{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-left:1px solid var(--line)}
-    .proof{min-height:150px;padding:22px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);transition:background .3s ease,transform .3s var(--ease)}
-    .proof:hover{background:var(--panel);transform:translateY(-4px)}
-    .proof .mono{color:var(--muted)}
-    .proof-value{font:800 clamp(2.1rem,3.3vw,3.5rem)/1 var(--display);letter-spacing:-.07em;margin:18px 0 7px}
-    .proof-label{font-size:.78rem;color:var(--muted)}
-
-    .work-list{display:grid;gap:0}
-    .work{display:grid;grid-template-columns:54px minmax(0,1fr) 210px;gap:24px;padding:26px 0;border-top:1px solid var(--line);position:relative;overflow:hidden}
-    .work:last-child{border-bottom:1px solid var(--line)}
-    .work::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(215,255,63,.045),transparent 55%);transform:translateX(-100%);transition:transform .55s var(--ease2)}
-    .work:hover::before{transform:none}
-    .work-no{font:500 .68rem var(--mono);color:var(--muted);padding-top:5px}
-    .work-main{display:grid;grid-template-columns:minmax(280px,520px) minmax(0,1fr);gap:28px;align-items:center;position:relative;z-index:1}
-    .work-media{aspect-ratio:16/10;background:#131313;border:1px solid var(--line);overflow:hidden;position:relative}
-    .work-media::after{content:"VIEW PROJECT";position:absolute;left:14px;bottom:12px;padding:6px 8px;border:1px solid rgba(255,255,255,.18);background:rgba(9,9,9,.58);backdrop-filter:blur(8px);font:500 .58rem var(--mono);opacity:0;transform:translateY(8px);transition:opacity .35s ease,transform .35s var(--ease)}
-    .work:hover .work-media::after{opacity:1;transform:none}
-    .work-media img{width:100%;height:100%;object-fit:cover;filter:saturate(.75);transition:transform .7s var(--ease),filter .5s ease}
-    .work:hover .work-media img{transform:scale(1.045);filter:saturate(1)}
-    .work-copy .role{display:inline-block;color:var(--acid);font:500 .63rem var(--mono);text-transform:uppercase;letter-spacing:.11em;margin-bottom:10px}
-    .work-copy h3{font:800 clamp(1.7rem,3vw,3rem)/.98 var(--display);letter-spacing:-.06em;margin-bottom:11px}
-    .work-copy p{color:#87847d;line-height:1.65;max-width:560px}
-    .work-link{display:inline-flex;align-items:center;gap:8px;margin-top:17px;font:600 .63rem var(--mono);text-transform:uppercase;color:var(--text);border-bottom:1px solid var(--line-light);padding-bottom:5px}
-    .work-link i{font-size:.58rem;transition:transform .25s ease}
-    .work-link:hover i{transform:translate(3px,-3px)}
-    .work-meta{position:relative;z-index:1;border-left:1px solid var(--line);padding:7px 0 7px 18px;align-self:center}
-    .work-meta .mono{color:var(--muted)}
-    .work-meta p{font-size:.77rem;color:#69665f;line-height:1.6;margin-top:10px}
-
-    .capabilities{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line);border-left:1px solid var(--line)}
-    .cap{min-height:250px;padding:30px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);position:relative;transition:background .35s ease}
-    .cap:hover{background:var(--panel)}
-    .cap-no{font:500 .65rem var(--mono);color:var(--muted)}
-    .cap h3{font:800 1.8rem var(--display);letter-spacing:-.04em;margin:48px 0 10px}
-    .cap p{color:#7d7a73;max-width:500px;line-height:1.65}
-    .cap .line{position:absolute;right:30px;top:30px;width:56px;height:1px;background:var(--line-light);transition:width .5s var(--ease)}
-    .cap:hover .line{width:95px;background:var(--acid)}
-
-    .studio-card{border:1px solid var(--line);display:grid;grid-template-columns:1.1fr .9fr;background:#0d0d0d;overflow:hidden;position:relative}
-    .studio-copy{padding:54px;border-right:1px solid var(--line)}
-    .studio-copy h3{font:800 clamp(4rem,7vw,8rem)/.82 var(--display);letter-spacing:-.09em;margin:18px 0 24px}
-    .studio-copy p{color:#85827b;max-width:660px;line-height:1.75}
-    .studio-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:28px}
-    .tag{border:1px solid var(--line-light);padding:8px 10px;font:500 .62rem var(--mono);text-transform:uppercase;color:#aaa79f;background:#101010}
-    .studio-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
-    .studio-aside{display:flex;flex-direction:column;justify-content:space-between;min-height:520px}
-    .studio-aside img{width:100%;height:260px;object-fit:cover;filter:saturate(.85)}
-    .studio-aside-bottom{padding:28px}
-    .studio-aside-bottom .big{font:700 2.2rem/1.05 var(--display);letter-spacing:-.06em;margin:14px 0 22px}
-    .studio-socials{display:flex;flex-wrap:wrap;gap:8px}
-
-    .lab{background:#0b0b0b}
-    .lab-shell{border:1px solid var(--line);background:#0f0f0f;position:relative;overflow:hidden}
-    .lab-head{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:14px 16px;border-bottom:1px solid var(--line);font:500 .63rem var(--mono);text-transform:uppercase;color:#817e76}
-    .lab-head .live{color:var(--acid)}
-    .lab iframe{display:block;width:100%;height:610px;border:0;background:#0d0d0d}
-    .lab-caption{display:flex;justify-content:space-between;gap:16px;padding-top:13px;color:#6d6a63}
-
-    .about-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:80px}
-    .about-statement{font:800 clamp(3rem,6vw,6.5rem)/.88 var(--display);letter-spacing:-.075em}
-    .about-statement span{color:var(--acid)}
-    .about-copy{color:#86837c;line-height:1.75;font-size:1rem}
-    .facts{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line);margin-top:30px}
-    .fact{padding:18px 0;border-bottom:1px solid var(--line)}
-    .fact:nth-child(even){padding-left:18px;border-left:1px solid var(--line)}
-    .fact b{display:block;font:700 .95rem var(--display);color:var(--text)}
-    .fact span{font-size:.76rem;color:var(--muted)}
-    .quote{margin-top:34px;padding:19px 0 0;border-top:1px solid var(--line);font:600 1.05rem/1.5 var(--display);color:var(--text)}
-    .quote::before{content:"/";color:var(--acid);margin-right:9px}
-
-    .contact{padding:118px 0 124px;background:var(--acid);color:#090909}
-    .contact-grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:80px;align-items:end}
-    .contact h2{font:800 clamp(4.5rem,10vw,10.8rem)/.8 var(--display);letter-spacing:-.09em;max-width:1000px}
-    .contact-copy p{font-size:1rem;line-height:1.65;max-width:420px;margin-bottom:26px}
-    .contact .btn.primary{background:#090909;color:var(--acid);border-color:#090909}
-    .contact .btn.primary:hover{background:#fffdf7;color:#090909;border-color:#fffdf7}
-    .contact .btn.ghost{border-color:#090909}
-    .contact .btn.ghost:hover{background:#090909;color:var(--acid)}
-    footer{border-top:1px solid rgba(255,255,255,.07);padding:20px 0;background:#090909;color:#77736b}
-    .footer-row{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
-
-    .mobile-toggle{display:none;width:40px;height:40px;border:1px solid var(--line-light);background:#0d0d0d;color:var(--text)}
-    .mobile-menu{display:none}
-
-    @media(max-width:1120px){
-      .hero-grid{grid-template-columns:1fr 340px;gap:40px}
-      .hero h1{font-size:clamp(4.2rem,10vw,8rem)}
-      .hero-art{min-height:480px}
-      .hero-bottom{grid-template-columns:1fr 250px}
-      .work{grid-template-columns:45px minmax(0,1fr)}
-      .work-meta{display:none}
-      .work-main{grid-template-columns:minmax(260px,1fr) 1fr}
-      .contact-grid{grid-template-columns:1fr}
-    }
-    @media(max-width:820px){
-      .wrap{width:min(100% - 28px,1380px)}
-      header{padding:9px 0}
-      .navlinks{display:none}
-      .nav-cta{display:none}
-      .mobile-toggle{display:grid;place-items:center}
-      .hero{padding-top:105px}
-      .hero-grid,.hero-bottom,.about-grid,.studio-card{grid-template-columns:1fr}
-      .hero-grid{gap:42px}
-      .hero-art{min-height:420px;max-width:560px;margin:auto;width:100%}
-      .float-tag.one{left:0}
-      .float-tag.two{right:0}
-      .section{padding:78px 0}
-      .section-top{grid-template-columns:1fr;gap:10px}
-      .proof-grid{grid-template-columns:1fr 1fr}
-      .work-main{grid-template-columns:1fr}
-      .work{grid-template-columns:36px 1fr;gap:12px;padding:22px 0}
-      .capabilities{grid-template-columns:1fr}
-      .studio-copy{border-right:0;border-bottom:1px solid var(--line);padding:34px}
-      .studio-aside{min-height:0}
-      .studio-aside img{height:210px}
-      .lab iframe{height:510px}
-      .contact{padding:84px 0 92px}
-    }
-    @media(max-width:560px){
-      .hero-kicker{align-items:flex-start;flex-direction:column}
-      .hero h1{font-size:clamp(3.5rem,17vw,5.5rem)}
-      .hero-copy{font-size:1rem}
-      .hero-note{margin-top:4px}
-      .hero-art{min-height:360px}
-      .float-tag{padding:9px 10px}
-      .float-tag strong{font-size:.75rem}
-      .proof-grid{grid-template-columns:1fr 1fr}
-      .proof{min-height:125px;padding:15px}
-      .proof-value{font-size:2rem}
-      .section-title{font-size:clamp(2.35rem,13vw,4.3rem)}
-      .studio-copy h3{font-size:4.5rem}
-      .about-statement{font-size:clamp(2.8rem,13vw,4.4rem)}
-      .contact h2{font-size:clamp(4rem,18vw,7rem)}
-      .lab-caption{flex-direction:column}
-    }
-    @media (pointer:coarse), (prefers-reduced-motion:reduce){
-      .cursor,.cursor-ring{display:none!important}
-      .reveal{opacity:1;transform:none;transition:none}
-      .ticker-track{animation:none}
-      html{scroll-behavior:auto}
-    }
-  </style>
-</head>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ray | Roblox developer</title>
+<meta name="description" content="Ray builds Roblox games: gameplay code, 3D, UI and performance. Poke around, there are secrets.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#151a2e;--yel:#ffd23f;--blu:#2f7cff;--grn:#35c759;--red:#ff5a4e;--s1:#6ec6ff;--s2:#d9f3ff;--f:'Lilita One',system-ui,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;background:#6ec6ff}
+body{font:600 1rem/1.5 'Nunito',system-ui,sans-serif;color:var(--ink);overflow-x:hidden;padding-bottom:120px}
+a{color:inherit;text-decoration:none}button{font:inherit;color:inherit;cursor:pointer}
+#sky{position:fixed;inset:0;z-index:-2;background:linear-gradient(var(--s1),var(--s2))}
+.cl{position:fixed;left:-220px;width:150px;height:46px;background:#fff;border-radius:46px;opacity:.85;z-index:-1;animation:drift 70s linear infinite}
+.cl::before,.cl::after{content:"";position:absolute;background:#fff;border-radius:50%}
+.cl::before{width:60px;height:60px;left:22px;top:-26px}.cl::after{width:46px;height:46px;left:74px;top:-16px}
+@keyframes drift{to{transform:translateX(calc(100vw + 440px))}}
+.wrap{width:min(1100px,calc(100% - 32px));margin:auto}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;font:1.15rem var(--f);background:#fff;border:4px solid var(--ink);border-radius:14px;box-shadow:0 5px 0 var(--ink);transition:transform .1s,box-shadow .1s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 7px 0 var(--ink)}.btn:active{transform:translateY(5px);box-shadow:0 0 0 var(--ink)}
+.btn.g{background:var(--grn)}.btn.y{background:var(--yel)}.btn.r{background:var(--red);color:#fff}.btn[aria-disabled]{opacity:.55;pointer-events:none}
+.row{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
+.bar{position:fixed;z-index:80;top:10px;left:50%;translate:-50% 0;width:min(1100px,calc(100% - 24px));display:flex;justify-content:space-between;align-items:center;padding:7px 12px;background:#fff;border:4px solid var(--ink);border-radius:16px;box-shadow:0 5px 0 var(--ink)}
+.brand{display:flex;align-items:center;gap:10px;font:1.5rem var(--f);cursor:pointer;user-select:none}
+.brand i{width:32px;height:32px;background:var(--yel);border:3px solid var(--ink);border-radius:8px;display:grid;place-items:center;font-size:1.1rem;font-style:normal;rotate:-8deg;transition:rotate .2s}
+.brand:hover i{rotate:8deg}
+.links{display:flex;gap:6px;align-items:center}.links a{padding:6px 12px;border-radius:10px;font:1.05rem var(--f)}.links a:hover{background:var(--yel)}
+.mute{width:38px;height:38px;border:3px solid var(--ink);border-radius:10px;background:var(--s2)}
+.lb{position:fixed;z-index:70;right:12px;top:82px;width:172px;background:rgba(21,26,46,.88);color:#fff;border:3px solid var(--ink);border-radius:12px;padding:8px 12px;font-size:.85rem}
+.lb h4{font:1rem var(--f);color:var(--yel);margin-bottom:2px}.lb p{display:flex;justify-content:space-between}
+#toasts{position:fixed;z-index:90;left:12px;top:82px;display:grid;gap:8px}
+.toast{background:var(--yel);border:4px solid var(--ink);border-radius:14px;padding:8px 14px;font:1.05rem var(--f);box-shadow:4px 4px 0 var(--ink);animation:slide .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes slide{from{transform:translateX(-120%)}}
+.hero{min-height:100svh;padding-top:110px;display:grid;grid-template-columns:1.25fr .75fr;gap:30px;align-items:center}
+.h1{font:clamp(3.4rem,8.4vw,7.4rem)/.98 var(--f);color:#fff;-webkit-text-stroke:9px var(--ink);paint-order:stroke fill;text-shadow:0 8px 0 var(--ink);letter-spacing:.01em}
+.h1 span{display:inline-block;cursor:pointer;transition:transform .18s cubic-bezier(.3,1.8,.5,1);animation:pop .6s cubic-bezier(.3,1.6,.5,1) backwards;animation-delay:calc(var(--i)*.09s + 1.3s)}
+.h1 span:hover{transform:translateY(-10px) rotate(-5deg)}
+@keyframes pop{from{transform:translateY(70px) scale(.5) rotate(-10deg);opacity:0}}
+.lead{font-size:1.35rem;font-weight:800;margin-top:26px;max-width:30ch}
+.hint{margin-top:18px;font-size:.92rem;background:#fff;display:inline-block;padding:6px 12px;border:3px dashed var(--ink);border-radius:12px}
+.stick{position:relative;width:min(310px,80%);aspect-ratio:1;margin:auto;rotate:4deg;background:var(--yel);border:5px solid var(--ink);border-radius:26px;box-shadow:10px 10px 0 var(--ink);cursor:grab;touch-action:none;user-select:none}
+.stick img{width:100%;height:100%;object-fit:cover;border-radius:20px;pointer-events:none}
+.stick.drag{cursor:grabbing;box-shadow:16px 16px 0 var(--ink)}
+.chip{position:absolute;left:-22px;bottom:22px;rotate:-6deg;background:var(--grn);border:4px solid var(--ink);border-radius:12px;padding:5px 12px;font:1rem var(--f)}
+.chip2{position:absolute;right:-16px;top:-16px;rotate:9deg;background:#fff;border:4px solid var(--ink);border-radius:12px;padding:3px 10px;font:1rem var(--f)}
+.sec{padding:70px 0}
+.tag{display:inline-block;font:clamp(1.8rem,4vw,2.6rem) var(--f);background:var(--yel);border:4px solid var(--ink);border-radius:14px;padding:2px 18px;rotate:-2deg;box-shadow:5px 5px 0 var(--ink);margin-bottom:28px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px}
+.card{background:#fff;border:4px solid var(--ink);border-radius:20px;box-shadow:6px 6px 0 var(--ink);overflow:hidden;display:flex;flex-direction:column;transition:transform .2s cubic-bezier(.3,1.6,.5,1),box-shadow .2s}
+.card:hover{transform:translate(-3px,-5px) rotate(-1.2deg);box-shadow:10px 11px 0 var(--ink)}
+.card img{width:100%;aspect-ratio:16/10;object-fit:cover;border-bottom:4px solid var(--ink);background:#cfe6ff}
+.card div{padding:14px 16px 18px;display:flex;flex-direction:column;gap:8px;flex:1}
+.card h3{font:1.6rem/1.05 var(--f)}.card p{font-size:.95rem}
+.mini{font-size:.78rem;font-weight:800;background:var(--s2);border:2px solid var(--ink);border-radius:20px;padding:1px 10px;align-self:flex-start}
+.card .btn{margin-top:auto;align-self:flex-start;font-size:1rem;padding:8px 16px}
+.hot{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding-top:16px}
+.slot{position:relative;width:80px;height:80px;font-size:2.2rem;background:#fff;border:4px solid var(--ink);border-radius:16px;box-shadow:0 5px 0 var(--ink);transition:transform .2s cubic-bezier(.3,1.8,.5,1),background .2s}
+.slot small{position:absolute;left:6px;top:2px;font:.85rem var(--f)}.slot:hover{transform:translateY(-6px)}.slot.on{background:var(--yel);transform:translateY(-16px)}
+.tt{margin:26px auto 0;max-width:560px;text-align:center;background:#fff;border:4px solid var(--ink);border-radius:16px;padding:12px 16px;box-shadow:5px 5px 0 var(--ink);font-size:1.05rem}
+.tt b{font:1.3rem var(--f);margin-right:6px}
+.studio{display:grid;grid-template-columns:1fr 1fr}
+.studio img{width:100%;height:100%;min-height:200px;object-fit:cover;border-right:4px solid var(--ink);background:#cfe6ff}
+.studio>div{padding:26px;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.big{font:clamp(3.5rem,8vw,5.5rem)/.9 var(--f);color:var(--blu);-webkit-text-stroke:3px var(--ink);paint-order:stroke fill}
+.studio .btn{margin:0}.soc{display:flex;gap:14px;font-weight:800;text-decoration:underline;text-decoration-thickness:3px;text-decoration-color:var(--yel)}
+.tv{background:#fff;border:4px solid var(--ink);border-radius:20px;box-shadow:6px 6px 0 var(--ink);overflow:hidden}
+.tv p{padding:8px 16px;border-bottom:4px solid var(--ink);font:1.1rem var(--f);background:var(--s2)}
+.tv iframe{display:block;width:100%;height:460px;border:0}
+.chat{background:rgba(21,26,46,.94);color:#fff;border:4px solid var(--ink);border-radius:18px;box-shadow:6px 6px 0 var(--ink);padding:14px;max-width:760px}
+#log{height:250px;overflow:auto;display:grid;align-content:start;gap:4px;font-size:.98rem;padding-right:6px}
+.chat form{display:flex;gap:8px;margin-top:10px}
+.chat input{flex:1;min-width:0;padding:10px 14px;border-radius:12px;border:3px solid var(--ink);font:inherit;background:#fff;color:var(--ink)}
+.chat button.send{border:3px solid var(--ink);background:var(--grn);border-radius:12px;padding:0 16px;font:1.1rem var(--f)}
+.qk{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.qk button{background:#2b3358;color:#fff;border:2px solid #4b5688;border-radius:20px;padding:2px 12px;font-size:.85rem}.qk button:hover{background:var(--yel);color:var(--ink)}
+.cta{background:var(--yel);border:4px solid var(--ink);border-radius:26px;box-shadow:8px 8px 0 var(--ink);padding:clamp(24px,5vw,54px);text-align:center}
+.cta h2{font:clamp(2.6rem,7vw,5.4rem)/1 var(--f)}.cta .row{justify-content:center}.cta small{display:block;margin-top:22px;font-weight:800}
+footer{text-align:center;color:#fff;font-weight:800;padding:26px 0;text-shadow:0 2px 0 var(--ink)}
+.floor{position:fixed;left:0;right:0;bottom:0;height:14px;z-index:50;pointer-events:none;background:#a3a9b8 radial-gradient(circle at 10px 9px,#c9cedb 4px,transparent 5px) 0 0/20px 14px;border-top:4px solid var(--ink)}
+#noob{position:fixed;bottom:14px;left:0;width:64px;z-index:60;display:flex;flex-direction:column;align-items:center;cursor:pointer;scale:.9;transform-origin:bottom}
+.hd{width:32px;height:32px;background:var(--yel);border:3px solid var(--ink);border-radius:6px;position:relative}
+.hd::before,.hd::after{content:"";position:absolute;top:8px;width:5px;height:5px;background:var(--ink);border-radius:50%}.hd::before{left:5px}.hd::after{right:5px}
+.hd b{position:absolute;left:7px;bottom:3px;width:12px;height:6px;border-bottom:3px solid var(--ink);border-radius:0 0 9px 9px}
+.tr{width:42px;height:38px;background:var(--blu);border:3px solid var(--ink);border-radius:4px;position:relative}
+.tr::before,.tr::after{content:"";position:absolute;top:-3px;width:14px;height:38px;background:var(--yel);border:3px solid var(--ink);border-radius:4px}.tr::before{left:-17px}.tr::after{right:-17px}
+.lgs{display:flex}.lg{width:21px;height:30px;background:var(--grn);border:3px solid var(--ink);border-radius:4px;transform-origin:top}
+.walk .lg:first-child{animation:st .28s infinite alternate}.walk .lg:last-child{animation:st .28s infinite alternate-reverse}
+@keyframes st{from{rotate:-24deg}to{rotate:24deg}}
+.held{position:absolute;left:46px;top:32px;font-size:1.7rem;rotate:20deg}
+.say{position:absolute;bottom:calc(100% + 10px);left:50%;translate:-50% 0;width:max-content;max-width:190px;background:#fff;border:3px solid var(--ink);border-radius:12px;padding:5px 10px;font:.95rem/1.15 var(--f);text-align:center;opacity:0;scale:.6;transition:.2s cubic-bezier(.3,1.6,.5,1);pointer-events:none}.say.on{opacity:1;scale:1}
+.bk{position:fixed;left:0;top:0;z-index:55;pointer-events:none;border:3px solid var(--ink);border-radius:4px;box-shadow:inset 0 -5px 0 rgba(0,0,0,.18)}
+.bug{position:fixed;z-index:75;font-size:2rem;background:none;border:0;cursor:crosshair;animation-duration:var(--d);animation-timing-function:linear;animation-fill-mode:forwards}
+.bug.l{left:-60px;animation-name:cl}.bug.r{right:-60px;animation-name:cr}
+@keyframes cl{to{transform:translateX(calc(100vw + 120px))}}@keyframes cr{to{transform:translateX(calc(-100vw - 120px))}}
+.p{position:fixed;width:10px;height:10px;border:2px solid var(--ink);z-index:900;pointer-events:none;animation:burst .7s ease-out forwards}
+@keyframes burst{to{transform:translate(var(--x),var(--y)) rotate(240deg);opacity:0}}
+.party #sky{animation:hue 2.5s linear infinite}.party .card,.party .slot,.party .stick{animation:dance .45s infinite alternate}
+@keyframes hue{to{filter:hue-rotate(360deg)}}@keyframes dance{to{transform:translateY(-8px) rotate(2deg)}}
+#ld{position:fixed;inset:0;z-index:2000;background:var(--blu);display:grid;place-content:center;text-align:center;color:#fff;transition:opacity .5s,visibility .5s}
+#ld.gone{opacity:0;visibility:hidden}#ld h2{font:clamp(3rem,10vw,6rem) var(--f);-webkit-text-stroke:8px var(--ink);paint-order:stroke fill}
+.ldb{width:min(320px,70vw);height:24px;border:4px solid var(--ink);background:#fff;border-radius:12px;overflow:hidden;margin:14px auto}.ldb i{display:block;height:100%;background:var(--grn);animation:fill 1.2s ease-out forwards}
+@keyframes fill{from{width:0}to{width:100%}}
+:focus-visible{outline:4px solid var(--red);outline-offset:3px}
+@media(max-width:760px){.links{display:none}.hero,.studio{grid-template-columns:1fr}.stick{width:230px}.studio img{border-right:0;border-bottom:4px solid var(--ink);min-height:0}.lb{width:132px;font-size:.75rem;padding:6px 8px}.slot{width:64px;height:64px;font-size:1.8rem}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto}}
+</style></head>
 <body>
-  <div class="noise"></div>
-  <div class="progress" id="progress"></div>
-  <div class="cursor" id="cursor"></div>
-  <div class="cursor-ring" id="cursorRing"></div>
+<div id="ld"><div><h2>RAY</h2><div class="ldb"><i></i></div><p id="tip"></p></div></div>
+<div id="sky"></div><i class="cl" style="top:14%"></i><i class="cl" style="top:42%;animation-delay:-30s;scale:.7"></i><i class="cl" style="top:66%;animation-delay:-55s;scale:1.2"></i>
+<header class="bar"><a class="brand" id="logo" title="Click me 5 times"><i>R</i>Ray</a>
+<nav class="links"><a href="#games">Games</a><a href="#pack">Backpack</a><a href="#studio">Studio</a><a href="#chat">Chat</a></nav>
+<button class="mute" id="sn" aria-label="Toggle sound">🔊</button></header>
+<aside class="lb" aria-label="Leaderboard"><h4>Leaderboard</h4><p><span>🐛 Bugs squashed</span><b id="bg">0</b></p><p><span>🏅 Badges</span><b id="bd">0/7</b></p></aside>
+<div id="toasts"></div>
 
-  <header id="header">
-    <div class="wrap nav">
-      <a class="brand magnetic" href="#top" aria-label="Ray home">
-        <span class="brand-mark"><span>R</span></span>
-        <strong>RAY</strong>
-        <em>Roblox developer</em>
-      </a>
-      <nav class="navlinks" aria-label="Primary navigation">
-        <a href="#work">Work</a>
-        <a href="#systems">Systems</a>
-        <a href="#studio">Studio</a>
-        <a href="#lab">Lab</a>
-        <a href="#about">About</a>
-      </nav>
-      <a class="nav-cta magnetic" href="https://discord.gg/bGfnVxBGGB" target="_blank" rel="noopener noreferrer">Hire / talk <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
-      <button class="mobile-toggle" id="mobileToggle" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
-    </div>
-    <div class="mobile-menu" id="mobileMenu">
-      <a href="#work">Work</a><a href="#systems">Systems</a><a href="#studio">Studio</a><a href="#lab">Lab</a><a href="#about">About</a><a href="#contact">Contact</a>
-    </div>
-  </header>
+<main>
+<section class="hero wrap"><div>
+<h1 class="h1"><span>Hi,</span> <span>I'm</span> <span>Ray.</span><br><span>I</span> <span>build</span> <span>Roblox</span> <span>games.</span></h1>
+<p class="lead">Gameplay code, 3D, UI and the bug hunt. All of it.</p>
+<div class="row"><button class="btn g" id="dropb">Drop bricks 🧱</button><a class="btn y" href="#games">See my games</a><a class="btn" href="https://discord.gg/bGfnVxBGGB" target="_blank" rel="noopener noreferrer">Discord</a></div>
+<p class="hint">Psst: press 1 to 6, type “oof”, click the noob, squash the bugs.</p></div>
+<div class="stick" id="pfp"><img src="https://i.ibb.co/bgJHyVYT/robloxpfp.png" alt="Ray's Roblox avatar" width="720" height="720"><span class="chip">17.6K+ in Atlas Order</span><span class="chip2">drag me!</span></div>
+</section>
 
-  <main id="top">
-    <section class="hero">
-      <div class="wrap">
-        <div class="hero-grid">
-          <div>
-            <div class="hero-kicker">
-              <span class="mono kicker-left">Roblox / full-stack / technical direction</span>
-              <span class="status mono"><span class="status-dot"></span> Available for selected work</span>
-            </div>
-            <h1 class="reveal">I make Roblox games.<span>And I like making them properly.</span></h1>
-            <div class="hero-bottom reveal">
-              <div>
-                <p class="hero-copy">I write the gameplay code, build things in 3D, work on the UI and deal with the bugs that come with making a game. I like being involved in the actual work, not just one small part of it.</p>
-                <div class="hero-actions">
-                  <a class="btn primary magnetic" href="#work">See what I built <i class="fa-solid fa-arrow-down"></i></a>
-                  <a class="btn ghost magnetic" href="https://discord.gg/bGfnVxBGGB" target="_blank" rel="noopener noreferrer">Message me <i class="fa-brands fa-discord"></i></a>
-                </div>
-              </div>
-              <div class="hero-note">
-                <strong>Just look around.</strong>
-                <p>I would rather show you what I made than fill this page with a list of buzzwords.</p>
-              </div>
-            </div>
-          </div>
+<section class="sec wrap" id="games"><h2 class="tag">Games I made</h2>
+<div class="grid">
+<article class="card"><img src="https://i.ibb.co/KccPM58g/tlb1.png" alt="Brainrot Islands" loading="lazy"><div><h3>Brainrot Islands</h3><span class="mini">Solo · Mar 2026 to now</span><p>Map, UI, VFX, gameplay and saves. Every piece, built alone.</p><a class="btn g" href="https://roblox.com/games/121560706375064/Brainrot-Islands" target="_blank" rel="noopener noreferrer">▶ Play</a></div></article>
+<article class="card"><img src="https://i.ibb.co/nNR1qMsJ/bcr-cric.png" alt="City Services: Bear Creek" loading="lazy"><div><h3>City Services: Bear Creek</h3><span class="mini">Team · Feb to Mar 2026</span><p>Joined Rapid Games Studios. Fixed bugs and cut client lag.</p><span class="btn" aria-disabled="true">Team project</span></div></article>
+<article class="card"><img src="https://i.ibb.co/TDYK60LF/6-HOURS-7.png" alt="Find The Brainrots" loading="lazy"><div><h3>Find The Brainrots</h3><span class="mini">Solo · Dec 2025 to now</span><p>New map, custom 3D and UI. Runs on low-memory phones.</p><a class="btn g" href="https://roblox.com/games/124221298439095/Find-The-Brainrots" target="_blank" rel="noopener noreferrer">▶ Play</a></div></article>
+<article class="card"><img src="https://i.ibb.co/W46GnmwC/Blox-Royale-Icon-1.jpg" alt="Blox Royale" loading="lazy"><div><h3>Blox Royale</h3><span class="mini">Solo · Sep to Nov 2025</span><p>UI, meshes, map and gameplay, start to finish.</p><a class="btn g" href="https://roblox.com/games/125092852848866/Blox-Royale" target="_blank" rel="noopener noreferrer">▶ Play</a></div></article>
+</div></section>
 
-          <div class="hero-art reveal">
-            <div class="float-tag one"><strong>8+ yrs</strong><span>3D building</span></div>
-            <div class="profile-card" id="profileCard">
-              <div class="profile-corner mono">Ray / 2026</div>
-              <img src="https://i.ibb.co/bgJHyVYT/robloxpfp.png" alt="Ray Roblox avatar" width="720" height="900" fetchpriority="high">
-              <div class="profile-label"><span>Roblox developer</span><span>Atlas Order</span></div>
-            </div>
-            <div class="float-tag two"><strong>17.6K+</strong><span>Atlas Order members</span></div>
-          </div>
-        </div>
-      </div>
-    </section>
+<section class="sec wrap" id="pack"><h2 class="tag">My backpack</h2>
+<div class="hot" id="hot"></div><div class="tt" id="tt">Pick a tool. Click it or press 1 to 6.</div></section>
 
-    <div class="ticker" aria-hidden="true">
-      <div class="ticker-track">
-        <span class="ticker-item">Luau scripting <b>✦</b></span><span class="ticker-item">Gameplay systems <b>✦</b></span><span class="ticker-item">3D building <b>✦</b></span><span class="ticker-item">UI / UX <b>✦</b></span><span class="ticker-item">Optimization <b>✦</b></span><span class="ticker-item">Data systems <b>✦</b></span><span class="ticker-item">Atlas Order <b>✦</b></span>
-        <span class="ticker-item">Luau scripting <b>✦</b></span><span class="ticker-item">Gameplay systems <b>✦</b></span><span class="ticker-item">3D building <b>✦</b></span><span class="ticker-item">UI / UX <b>✦</b></span><span class="ticker-item">Optimization <b>✦</b></span><span class="ticker-item">Data systems <b>✦</b></span><span class="ticker-item">Atlas Order <b>✦</b></span>
-      </div>
-    </div>
+<section class="sec wrap" id="studio"><h2 class="tag">My studio</h2>
+<div class="card studio"><img src="https://i.ibb.co/0ymrxh3C/bannerrr.png" alt="Atlas Order banner" loading="lazy"><div>
+<span class="big">17.6K+</span><h3>Atlas Order members</h3><p>I run it. We test, release and hang out.</p>
+<div class="row" style="margin:8px 0"><a class="btn y" href="https://www.roblox.com/communities/32937478/Atlas-Order#!/about" target="_blank" rel="noopener noreferrer">Roblox group</a><a class="btn" href="https://discord.gg/bGfnVxBGGB" target="_blank" rel="noopener noreferrer">Discord</a></div>
+<div class="soc"><a href="https://x.com/AtlasOrderRBX" target="_blank" rel="noopener noreferrer">X</a><a href="https://www.youtube.com/@AtlasOrderRBX" target="_blank" rel="noopener noreferrer">YouTube</a></div></div></div></section>
 
-    <section class="section" id="work">
-      <div class="wrap">
-        <div class="section-top reveal">
-          <div class="section-id mono">01 / Selected work</div>
-          <div><h2 class="section-title">A few things <span>I have worked on.</span></h2><p class="section-intro">A mix of solo projects and team work. I have worked across code, building, UI and performance, depending on what the project needed.</p></div>
-        </div>
-        <div class="proof-grid stagger reveal">
-          <div class="proof" style="--i:0"><span class="mono">Experience</span><div class="proof-value">8+ yrs</div><div class="proof-label">3D building</div></div>
-          <div class="proof" style="--i:1"><span class="mono">Engineering</span><div class="proof-value">5+ yrs</div><div class="proof-label">Luau / gameplay</div></div>
-          <div class="proof" style="--i:2"><span class="mono">Community</span><div class="proof-value">17.6K+</div><div class="proof-label">Atlas Order members</div></div>
-          <div class="proof" style="--i:3"><span class="mono">Showcase</span><div class="proof-value">4</div><div class="proof-label">featured projects</div></div>
-        </div>
+<section class="sec wrap" id="lab"><h2 class="tag">Spin my model</h2>
+<div class="tv"><p>📺 Drag to rotate</p><iframe src="https://viewer.tinyglb.com/604459093cd3432c99fe7c70be92b75a" title="Interactive 3D model" loading="lazy" allow="fullscreen" referrerpolicy="strict-origin-when-cross-origin"></iframe></div></section>
 
-        <div class="work-list" style="margin-top:38px">
-          <article class="work reveal">
-            <div class="work-no">01</div>
-            <div class="work-main">
-              <div class="work-media"><img src="https://i.ibb.co/KccPM58g/tlb1.png" alt="Brainrot Islands project" loading="lazy" width="1000" height="625"></div>
-              <div class="work-copy"><span class="role">Solo / Full-stack</span><h3>Brainrot Islands</h3><p>Built solo across map geometry, UI, animation, VFX, core gameplay logic, state machines and persistent data.</p><a class="work-link" href="https://roblox.com/games/121560706375064/Brainrot-Islands" target="_blank" rel="noopener noreferrer">Open experience <i class="fa-solid fa-arrow-up-right-from-square"></i></a></div>
-            </div>
-            <div class="work-meta"><span class="mono">Mar 2026 / present</span><p>Built from the ground up, including the systems underneath it.</p></div>
-          </article>
-          <article class="work reveal">
-            <div class="work-no">02</div>
-            <div class="work-main">
-              <div class="work-media"><img src="https://i.ibb.co/nNR1qMsJ/bcr-cric.png" alt="City Services Bear Creek project" loading="lazy" width="1000" height="625"></div>
-              <div class="work-copy"><span class="role">Contribution / Rapid Games Studios</span><h3>City Services: Bear Creek</h3><p>Contributed to an existing production through gameplay scripting, system architecture, bug fixing and infrastructure work, including major client performance improvements. This is a team project, not my own game.</p><span class="work-link">Team contribution</span></div>
-            </div>
-            <div class="work-meta"><span class="mono">Feb 2026 / Mar 2026</span><p>Joined an existing production, found weak spots and improved the parts that mattered as a contributor.</p></div>
-          </article>
-          <article class="work reveal">
-            <div class="work-no">03</div>
-            <div class="work-main">
-              <div class="work-media"><img src="https://i.ibb.co/TDYK60LF/6-HOURS-7.png" alt="Find The Brainrots project" loading="lazy" width="1000" height="625"></div>
-              <div class="work-copy"><span class="role">Solo / Full-stack</span><h3>Find The Brainrots</h3><p>Rebuilt the map, made custom 3D assets and UI, then built the client and server systems around mobile memory limits.</p><a class="work-link" href="https://roblox.com/games/124221298439095/Find-The-Brainrots" target="_blank" rel="noopener noreferrer">Open experience <i class="fa-solid fa-arrow-up-right-from-square"></i></a></div>
-            </div>
-            <div class="work-meta"><span class="mono">Dec 2025 / present</span><p>Built with performance in mind, especially around mobile limits.</p></div>
-          </article>
-          <article class="work reveal">
-            <div class="work-no">04</div>
-            <div class="work-main">
-              <div class="work-media"><img src="https://i.ibb.co/W46GnmwC/Blox-Royale-Icon-1.jpg" alt="Blox Royale project" loading="lazy" width="1000" height="625"></div>
-              <div class="work-copy"><span class="role">Solo / Full-stack</span><h3>Blox Royale</h3><p>Designed and delivered the project around UI, 3D meshes, map work, gameplay and the systems holding it together.</p><a class="work-link" href="https://roblox.com/games/125092852848866/Blox-Royale" target="_blank" rel="noopener noreferrer">Open experience <i class="fa-solid fa-arrow-up-right-from-square"></i></a></div>
-            </div>
-            <div class="work-meta"><span class="mono">Sep 2025 / Nov 2025</span><p>A smaller project where I handled the build, gameplay and supporting systems.</p></div>
-          </article>
-        </div>
-      </div>
-    </section>
+<section class="sec wrap" id="chat"><h2 class="tag">Chat with me</h2>
+<div class="chat"><div id="log" aria-live="polite"></div>
+<form id="cf"><input id="ci" placeholder="Say hi, or type /help" autocomplete="off" aria-label="Chat message"><button class="send">Send</button></form>
+<div class="qk"><button data-c="/games">/games</button><button data-c="/skills">/skills</button><button data-c="/hire">/hire</button><button data-c="/party">/party</button><button data-c="/gravity">/gravity</button><button data-c="/oof">/oof</button></div></div></section>
 
-    <section class="section" id="systems">
-      <div class="wrap">
-        <div class="section-top reveal"><div class="section-id mono">02 / Systems</div><div><h2 class="section-title">What I <span>usually work on.</span></h2><p class="section-intro">This is the stuff I tend to spend most of my time on.</p></div></div>
-        <div class="capabilities stagger">
-          <div class="cap reveal" style="--i:0"><span class="cap-no">01</span><span class="line"></span><h3>Gameplay architecture</h3><p>Client and server boundaries, state machines, reusable modules and data flow that stays readable when the project gets bigger.</p></div>
-          <div class="cap reveal" style="--i:1"><span class="cap-no">02</span><span class="line"></span><h3>Performance</h3><p>Finding expensive work, lowering client memory pressure and building with mobile in mind from the start.</p></div>
-          <div class="cap reveal" style="--i:2"><span class="cap-no">03</span><span class="line"></span><h3>UI / UX</h3><p>UI that is easy to understand and fits the game instead of getting in the way.</p></div>
-          <div class="cap reveal" style="--i:3"><span class="cap-no">04</span><span class="line"></span><h3>3D + presentation</h3><p>Environment building, custom assets, animation and GFX when the project needs them.</p></div>
-        </div>
-      </div>
-    </section>
+<section class="sec wrap" id="contact"><div class="cta"><h2>Want something built?</h2>
+<div class="row"><a class="btn g" href="https://discord.gg/bGfnVxBGGB" target="_blank" rel="noopener noreferrer">Message me on Discord</a><a class="btn" href="https://www.roblox.com/users/1099653590/profile" target="_blank" rel="noopener noreferrer">Roblox profile</a><button class="btn r" id="resp">Respawn ↑</button></div>
+<small>English · Français · العربية</small></div></section>
+</main>
+<footer>Ray, 2026. No noobs were harmed. Several bugs were.</footer>
 
-    <section class="section" id="studio">
-      <div class="wrap">
-        <div class="section-top reveal"><div class="section-id mono">03 / Studio</div><div><h2 class="section-title">A project I <span>also run.</span></h2><p class="section-intro">Atlas Order is where I publish some of my work, test things and keep up with the community around it.</p></div></div>
-        <div class="studio-card reveal">
-          <div class="studio-copy"><span class="mono">Atlas Order / official studio</span><h3>17.6K+</h3><p>Atlas Order is a Roblox studio and community space I run for releasing projects, testing them and keeping up with players.</p><div class="studio-tags"><span class="tag">Studio</span><span class="tag">Community operations</span><span class="tag">Playtesting</span><span class="tag">Game releases</span></div><div class="studio-actions"><a class="btn primary" href="https://www.roblox.com/communities/32937478/Atlas-Order#!/about" target="_blank" rel="noopener noreferrer">Roblox group <i class="fa-solid fa-arrow-up-right-from-square"></i></a><a class="btn ghost" href="https://discord.gg/bGfnVxBGGB" target="_blank" rel="noopener noreferrer">Discord <i class="fa-brands fa-discord"></i></a></div></div>
-          <div class="studio-aside"><img src="https://i.ibb.co/0ymrxh3C/bannerrr.png" alt="Atlas Order banner" loading="lazy" width="1200" height="500"><div class="studio-aside-bottom"><span class="mono">Community / reach</span><div class="big">A place for projects, tests and updates.</div><div class="studio-socials"><a class="tag" href="https://x.com/AtlasOrderRBX" target="_blank" rel="noopener noreferrer">X / @AtlasOrderRBX</a><a class="tag" href="https://www.youtube.com/@AtlasOrderRBX" target="_blank" rel="noopener noreferrer">YouTube / @AtlasOrderRBX</a></div></div></div>
-        </div>
-      </div>
-    </section>
+<div class="floor"></div>
+<div id="noob" title="Hi!"><div class="say" id="say"></div><div class="held" id="held"></div><div class="hd"><b></b></div><div class="tr"></div><div class="lgs"><i class="lg"></i><i class="lg"></i></div></div>
 
-    <section class="section lab" id="lab">
-      <div class="wrap">
-        <div class="section-top reveal"><div class="section-id mono">04 / Lab</div><div><h2 class="section-title">Have a look around. <span>It is interactive.</span></h2><p class="section-intro">There is a live 3D viewer here. Move it around and have a look.</p></div></div>
-        <div class="lab-shell reveal"><div class="lab-head"><span>Atlas Order / interactive asset</span><span class="live">● live 3D</span></div><iframe src="https://viewer.tinyglb.com/604459093cd3432c99fe7c70be92b75a" title="Interactive 3D asset viewer" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="fullscreen"></iframe></div>
-        <div class="lab-caption mono"><span>drag / rotate / inspect</span><span>tinyglb viewer</span></div>
-      </div>
-    </section>
+<script>
+const $=(s,p=document)=>p.querySelector(s),$$=(s,p=document)=>[...p.querySelectorAll(s)],RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
+let snd=true,AC;
+function beep(f=440,d=.12,t='square',to){if(!snd)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain(),n=AC.currentTime;o.type=t;o.frequency.setValueAtTime(f,n);if(to)o.frequency.exponentialRampToValueAtTime(to,n+d);g.gain.setValueAtTime(.07,n);g.gain.exponentialRampToValueAtTime(.001,n+d);o.connect(g).connect(AC.destination);o.start();o.stop(n+d)}catch(e){}}
+$('#sn').onclick=e=>{snd=!snd;e.currentTarget.textContent=snd?'🔊':'🔇'};
+const shake=()=>$('main').animate([{transform:'translateX(-9px)'},{transform:'translateX(9px)'},{transform:'none'}],{duration:120,iterations:3});
+const oof=()=>{beep(260,.3,'sawtooth',70);shake();say('oof')};
 
-    <section class="section" id="about">
-      <div class="wrap">
-        <div class="section-top reveal"><div class="section-id mono">05 / About</div><div><h2 class="section-title">I like figuring <span>things out.</span></h2><p class="section-intro">I like understanding how a project fits together. If something is broken, unclear or slowing things down, I would rather dig into it and fix it.</p></div></div>
-        <div class="about-grid">
-          <div class="reveal"><div class="about-statement">I build things.<br><span>I also care how they work.</span></div><div class="facts"><div class="fact"><b>Luau</b><span>Gameplay / architecture</span></div><div class="fact"><b>3D</b><span>Building / assets</span></div><div class="fact"><b>UI / UX</b><span>Interfaces / flows</span></div><div class="fact"><b>Optimization</b><span>Client / memory</span></div><div class="fact"><b>Data</b><span>DataStore / persistence</span></div><div class="fact"><b>Animation</b><span>R6 / R15</span></div></div></div>
-          <div class="reveal"><p class="about-copy">English, French and Arabic. Comfortable working alone, working with a team and jumping into a production problem when the answer is not obvious yet.</p><p class="quote">I am happiest when there is something real to build or fix.</p></div>
-        </div>
-      </div>
-    </section>
+// loader
+const tips=['Tip: never trust the client. Ever.','Tip: it works on my baseplate.','Tip: Ray reads the output window for fun.','Tip: 8 years of studs and counting.','Tip: turn the sound on for the oof.'];
+$('#tip').textContent=tips[Math.random()*tips.length|0];
+setTimeout(()=>$('#ld').classList.add('gone'),1400);
 
-    <section class="contact" id="contact">
-      <div class="wrap contact-grid reveal"><div><span class="mono">06 / Contact</span><h2>Looking for a Roblox developer?</h2></div><div class="contact-copy"><p>For studio work, commissions or gameplay systems, Discord is the easiest way to reach me.</p><div class="hero-actions"><a class="btn primary magnetic" href="https://www.roblox.com/users/1099653590/profile" target="_blank" rel="noopener noreferrer">Roblox profile <i class="fa-solid fa-arrow-up-right-from-square"></i></a><a class="btn ghost magnetic" href="https://discord.gg/bGfnVxBGGB" target="_blank" rel="noopener noreferrer">Discord <i class="fa-brands fa-discord"></i></a></div></div></div>
-    </section>
-  </main>
+// badges + toasts
+const B={bug:['🐛','Exterminator'],chat:['💬','Chatterbox'],brick:['🧱','Bricklayer'],tool:['🎒','Fully equipped'],noob:['🙂','Noob whisperer'],secret:['🕹️','Found a secret'],end:['🏁','Made it to the end']},got=new Set();
+function badge(k){if(got.has(k))return;got.add(k);$('#bd').textContent=got.size+'/'+Object.keys(B).length;const t=document.createElement('div');t.className='toast';t.textContent=B[k][0]+' Badge unlocked: '+B[k][1];$('#toasts').append(t);beep(660,.12,'triangle',1100);setTimeout(()=>t.remove(),3800)}
 
-  <footer><div class="wrap footer-row"><span class="mono">RAY / ROBLOX DEVELOPER / 2026</span><span class="mono">Atlas Order</span></div></footer>
+// particles
+function burst(x,y,n=7,d=70){for(let i=0;i<n;i++){const p=document.createElement('i'),a=Math.random()*6.28,r=d*(.4+Math.random());p.className='p';p.style.cssText=`left:${x}px;top:${y}px;background:${['#ffd23f','#35c759','#2f7cff','#ff5a4e'][i%4]};--x:${Math.cos(a)*r}px;--y:${Math.sin(a)*r}px`;document.body.append(p);setTimeout(()=>p.remove(),700)}}
+addEventListener('pointerdown',e=>{if(e.target.closest('input'))return;burst(e.clientX,e.clientY);beep(480+Math.random()*350,.05)});
 
-  <script>
-    const $ = (s, p=document) => p.querySelector(s);
-    const $$ = (s, p=document) => [...p.querySelectorAll(s)];
+// headline notes
+$$('.h1 span').forEach((s,i)=>{s.style.setProperty('--i',i);s.onclick=()=>beep(261*Math.pow(1.1225,i*1.5),.18,'triangle')});
 
-    const progress = $('#progress');
-    const header = $('#header');
-    const updateScroll = () => {
-      const d = document.documentElement;
-      const max = d.scrollHeight - d.clientHeight;
-      progress.style.width = (max > 0 ? (scrollY / max) * 100 : 0) + '%';
-      header.classList.toggle('scrolled', scrollY > 18);
-    };
-    addEventListener('scroll', updateScroll, {passive:true});
-    updateScroll();
+// sky follows scroll: day > sunset > night
+const P=[[110,198,255,217,243,255],[255,158,109,255,217,168],[27,31,75,74,58,122]];
+function sky(){const m=document.documentElement.scrollHeight-innerHeight,t=m>0?scrollY/m:0,s=t*2,i=Math.min(1,s|0),f=s-i,a=P[i],b=P[i+1],c=a.map((v,k)=>Math.round(v+(b[k]-v)*f)),r=document.documentElement.style;r.setProperty('--s1',`rgb(${c[0]},${c[1]},${c[2]})`);r.setProperty('--s2',`rgb(${c[3]},${c[4]},${c[5]})`);if(t>.97)badge('end')}
+addEventListener('scroll',sky,{passive:true});addEventListener('resize',sky);sky();
 
-    const revealIO = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if(entry.isIntersecting){
-          entry.target.classList.add('visible');
-          revealIO.unobserve(entry.target);
-        }
-      });
-    }, {threshold:.12, rootMargin:'0px 0px -40px'});
-    $$('.reveal').forEach(el => revealIO.observe(el));
+// noob
+const noob=$('#noob'),sayEl=$('#say');let nx=innerWidth/2,tx=nx,nc=0,st;
+addEventListener('pointermove',e=>{tx=e.clientX});
+function say(t){sayEl.textContent=t;sayEl.classList.add('on');clearTimeout(st);st=setTimeout(()=>sayEl.classList.remove('on'),2600)}
+const L=['oof','I am not a bug. I am a feature.','Ray fixes bugs faster than I walk.','Have you tried turning it off and on?','Press 1 to 6 on your keyboard!','Type oof. Do it.','It works on my baseplate.'];
+noob.onclick=e=>{e.stopPropagation();noob.animate([{transform:'none'},{transform:'translateY(-100px)'},{transform:'none'}],{duration:480,easing:'ease-out'});say(L[Math.random()*L.length|0]);beep(520,.15,'square',900);if(++nc>=3)badge('noob')};
+const cols={},bk=[],CW=16;
+function loop(){const dx=tx-nx,mv=Math.abs(dx)>8;if(mv)nx+=Math.sign(dx)*Math.min(Math.abs(dx)*.06,5);noob.classList.toggle('walk',mv);noob.style.left=(Math.max(100,Math.min(innerWidth-100,nx))-32)+'px';
+const fl=innerHeight-14;for(const b of bk){if(b.on)continue;b.vy+=.6;b.y+=b.vy;const c0=b.x/CW|0,c1=(b.x+b.w)/CW|0;let top=0;for(let c=c0;c<=c1;c++)top=Math.max(top,cols[c]||0);const land=fl-top-b.h;if(b.y>=land){b.y=land;if(b.vy>4)b.vy*=-.3;else{b.on=1;beep(120,.06,'square');for(let c=c0;c<=c1;c++)cols[c]=top+b.h}}b.el.style.transform=`translate(${b.x}px,${b.y}px)`}
+requestAnimationFrame(loop)}loop();
+function drop(n=12){if(bk.length>=70){say("That's enough bricks.");oof();return}badge('brick');for(let i=0;i<n;i++)setTimeout(()=>{const w=[32,48,64][Math.random()*3|0],el=document.createElement('div');el.className='bk';el.style.width=w+'px';el.style.height='24px';el.style.background=['#ff5a4e','#ffd23f','#35c759','#2f7cff','#9b6bff'][Math.random()*5|0];document.body.append(el);bk.push({el,w,h:24,x:Math.random()*(innerWidth-w),y:-40,vy:0,on:0});beep(200+Math.random()*100,.05)},i*90)}
+function clearBricks(){bk.splice(0).forEach(b=>b.el.remove());for(const k in cols)delete cols[k]}
+$('#dropb').onclick=()=>drop();
 
-    const cursor = $('#cursor');
-    const ring = $('#cursorRing');
-    let mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my;
-    if(matchMedia('(pointer:fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches){
-      document.body.classList.add('has-cursor');
-      addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; cursor.style.left=mx+'px'; cursor.style.top=my+'px'; });
-      const loop = () => { rx += (mx-rx)*.16; ry += (my-ry)*.16; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(loop); };
-      loop();
-      $$('.magnetic,.work-media,.profile-card').forEach(el => {
-        el.addEventListener('mouseenter', () => ring.classList.add('big'));
-        el.addEventListener('mouseleave', () => ring.classList.remove('big'));
-      });
-    }
+// bugs
+let bugs=0;
+function spawnBug(){if(document.hidden||$$('.bug').length>2)return;const b=document.createElement('button'),d=7+Math.random()*5;b.className='bug '+(Math.random()<.5?'l':'r');b.textContent='🐛';b.setAttribute('aria-label','Squash the bug');b.style.top=(100+Math.random()*(innerHeight-260))+'px';b.style.setProperty('--d',d+'s');
+b.onclick=()=>{b.textContent='💥';b.style.pointerEvents='none';$('#bg').textContent=++bugs;beep(200,.18,'sawtooth',60);say(bugs<5?'Bug squashed!':'Exterminator!');if(bugs>=5)badge('bug');setTimeout(()=>b.remove(),300)};
+document.body.append(b);setTimeout(()=>b.remove(),d*1000+300)}
+if(!RM){setTimeout(spawnBug,3500);setInterval(spawnBug,5500)}
 
-    const profile = $('#profileCard');
-    if(profile && matchMedia('(pointer:fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches){
-      profile.addEventListener('mousemove', e => {
-        const r = profile.getBoundingClientRect();
-        const x = (e.clientX-r.left)/r.width-.5;
-        const y = (e.clientY-r.top)/r.height-.5;
-        profile.style.transform = `perspective(900px) rotateY(${x*9}deg) rotateX(${y*-7}deg) translateY(-4px)`;
-      });
-      profile.addEventListener('mouseleave', () => profile.style.transform='');
-    }
+// backpack
+const T=[['💻','Luau','5+ years of gameplay code with a clean client/server split.'],['🧱','3D building','8+ years of maps, props and custom meshes.'],['🎨','UI/UX','Menus that make sense and fit the game.'],['⚡','Optimization','Low memory, smooth on phones.'],['💾','DataStore','Saves that never eat your progress.'],['🎬','Animation','R6 and R15.']];
+$('#hot').innerHTML=T.map((t,i)=>`<button class="slot" data-i="${i}" aria-label="${t[1]}"><small>${i+1}</small>${t[0]}</button>`).join('');
+function equip(i){$$('.slot').forEach((s,j)=>s.classList.toggle('on',j===i));$('#tt').innerHTML=`<b>${T[i][1]}</b>${T[i][2]}`;$('#held').textContent=T[i][0];say(T[i][1]+' equipped');beep(300+i*90,.1);badge('tool')}
+$('#hot').onclick=e=>{const b=e.target.closest('.slot');if(b)equip(+b.dataset.i)};
 
-    const mobileToggle = $('#mobileToggle');
-    const mobileMenu = $('#mobileMenu');
-    mobileToggle?.addEventListener('click', () => {
-      const open = mobileMenu.classList.toggle('open');
-      mobileMenu.style.display = open ? 'grid' : 'none';
-    });
-    $$('#mobileMenu a').forEach(a => a.addEventListener('click', () => { mobileMenu.classList.remove('open'); mobileMenu.style.display='none'; }));
+// sticker drag with bounce back
+const pf=$('#pfp');let dr=0,sx,sy;
+pf.onpointerdown=e=>{dr=1;sx=e.clientX;sy=e.clientY;pf.style.transition='';pf.setPointerCapture(e.pointerId);pf.classList.add('drag')};
+pf.onpointermove=e=>{if(dr)pf.style.translate=`${e.clientX-sx}px ${e.clientY-sy}px`};
+pf.onpointerup=()=>{dr=0;pf.classList.remove('drag');pf.style.transition='translate .6s cubic-bezier(.3,1.7,.5,1)';pf.style.translate='0 0';beep(300,.2,'triangle',150)};
 
-    $$('.magnetic').forEach(el => {
-      if(!matchMedia('(pointer:fine)').matches) return;
-      el.addEventListener('mousemove', e => {
-        const r = el.getBoundingClientRect();
-        const x = e.clientX - (r.left + r.width/2);
-        const y = e.clientY - (r.top + r.height/2);
-        el.style.transform = `translate(${x*.08}px,${y*.08}px)`;
-      });
-      el.addEventListener('mouseleave', () => el.style.transform='');
-    });
+// chat
+const log=$('#log');
+function msg(who,t,c){const p=document.createElement('p'),b=document.createElement('b');b.style.color=c||'#ffd23f';b.textContent=who+': ';p.append(b,t);log.append(p);log.scrollTop=log.scrollHeight}
+function party(){document.documentElement.classList.toggle('party');burst(innerWidth/2,innerHeight/3,40,320);beep(523,.15,'triangle',784)}
+function gravity(){const els=$$('.card,.slot');els.forEach(el=>{el.style.transition='transform 1s cubic-bezier(.6,0,1,.6)';el.style.transform=`translateY(${60+Math.random()*90}px) rotate(${(Math.random()-.5)*40}deg)`});setTimeout(()=>els.forEach(el=>{el.style.transition='transform .8s cubic-bezier(.3,1.6,.5,1)';el.style.transform=''}),2200);setTimeout(()=>els.forEach(el=>el.style.transition=''),3200)}
+const C={'/help':()=>'Try /games /skills /hire /party /gravity /oof /bricks /clear','/games':()=>'Brainrot Islands, Find The Brainrots, Blox Royale, and Bear Creek with Rapid Games Studios.','/skills':()=>'Luau 5+ yrs, 3D 8+ yrs, UI, optimization, DataStore, animation.','/hire':()=>{open('https://discord.gg/bGfnVxBGGB','_blank','noopener');return 'Opening Discord. Good choice.'},'/party':()=>{party();return 'Party mode toggled 🎉'},'/gravity':()=>{gravity();return 'Uh oh.'},'/oof':()=>{oof();return 'oof.'},'/bricks':()=>{drop(20);return 'Incoming!'},'/clear':()=>{clearBricks();log.textContent='';return 'Cleaned up.'}};
+const R=['lol','Nice. Try /help.','Ray is typing… then deleting it.','Fastest way to reach Ray: /hire'];
+function run(v){v=v.trim();if(!v)return;msg('You',v,'#7fd3ff');badge('chat');const r=C[v.toLowerCase()];msg('Ray',r?r():v[0]==='/'?'Unknown command. Try /help':R[Math.random()*R.length|0])}
+$('#cf').onsubmit=e=>{e.preventDefault();run($('#ci').value);$('#ci').value=''};
+$$('.qk button').forEach(b=>b.onclick=()=>run(b.dataset.c));
+msg('Ray','Welcome to my server! Type /help to see what I can do.');
 
-    const sectionLinks = $$('.navlinks a');
-    const sections = sectionLinks.map(a => $(a.getAttribute('href'))).filter(Boolean);
-    const navIO = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        const link = $('.navlinks a[href="#'+entry.target.id+'"]');
-        if(link) link.style.color = entry.isIntersecting ? 'var(--text)' : '';
-      });
-    }, {rootMargin:'-35% 0px -55% 0px',threshold:0});
-    sections.forEach(s => navIO.observe(s));
-  </script>
-</body>
-</html>
+// secrets
+const K='ArrowUp,ArrowUp,ArrowDown,ArrowDown,ArrowLeft,ArrowRight,ArrowLeft,ArrowRight,b,a';let ks=[],ty='';
+addEventListener('keydown',e=>{if(/INPUT|TEXTAREA/.test(e.target.tagName))return;ks=[...ks,e.key.length>1?e.key:e.key.toLowerCase()].slice(-10);if(ks.join()===K){party();badge('secret');say('Cheat code accepted!')}
+if(/^[1-6]$/.test(e.key))equip(+e.key-1);if(e.key.length===1){ty=(ty+e.key.toLowerCase()).slice(-3);if(ty==='oof'){oof();badge('secret')}}});
+let lc=0;$('#logo').onclick=()=>{beep(400+lc*80,.08);if(++lc>=5){lc=0;badge('secret');beep(200,.5,'sawtooth',800);$('main').animate([{transform:'rotate(0)'},{transform:'rotate(360deg)'}],{duration:1200,easing:'ease-in-out'})}};
+
+// respawn
+$('#resp').onclick=()=>{scrollTo({top:0,behavior:'smooth'});setTimeout(()=>{noob.animate([{transform:'translateY(-110vh)'},{transform:'none'}],{duration:900,easing:'cubic-bezier(.3,1.5,.6,1)'});say('Respawned!');beep(700,.3,'triangle',300)},700)};
+</script>
+</body></html>
